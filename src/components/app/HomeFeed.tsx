@@ -105,18 +105,18 @@ function PostCard({ post }: { post: (typeof posts)[number] }) {
   );
 }
 
-export function HomeFeed() {
+export function HomeFeed({ onCreate }: { onCreate?: () => void } = {}) {
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur-md">
         <h1 className="font-serif text-2xl font-bold italic tracking-tight text-foreground">
-          Blush
+          GuluMulu
         </h1>
         <div className="flex items-center gap-3">
           <button aria-label="Notifications" className="rounded-full p-1.5 hover:bg-pink-soft">
             <Heart className="h-6 w-6 text-foreground" />
           </button>
-          <button aria-label="Create post" className="rounded-full p-1.5 hover:bg-pink-soft">
+          <button onClick={onCreate} aria-label="Create post" className="rounded-full p-1.5 hover:bg-pink-soft">
             <PlusSquare className="h-6 w-6 text-foreground" />
           </button>
         </div>
