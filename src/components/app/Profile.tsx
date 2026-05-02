@@ -1,23 +1,28 @@
-import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive, LogOut } from "lucide-react";
 import { useState } from "react";
-import { profile } from "@/lib/mock-data";
+import { profile as demoProfile } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Profile() {
+  const { profile: realProfile, signOut, refreshProfile } = useAuth();
   const [tab, setTab] = useState<"grid" | "tagged">("grid");
   const [editing, setEditing] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [data, setData] = useState<ProfileEdit>({
-    avatar: profile.avatar,
-    fullName: profile.fullName,
-    username: profile.username,
-    bio: profile.bio,
-    isPrivate: true,
-  });
-  const images = tab === "grid" ? profile.grid : profile.tagged;
+
+  // Compose display data: real profile fields + demo grid/stats (Phase 1 doesn't include posts yet).
+  const data: ProfileEdit = {
+    avatar: realProfile?.avatar_url || demoProfile.avatar,
+    fullName: realProfile?.full_name || demoProfile.fullName,
+    username: realProfile?.username || demoProfile.username,
+    bio: realProfile?.bio || "",
+    isPrivate: realProfile?.is_private ?? false,
+  };
+  const images = tab === "grid" ? demoProfile.grid : demoProfile.tagged;
+
 
   return (
     <div className="flex flex-1 flex-col">
