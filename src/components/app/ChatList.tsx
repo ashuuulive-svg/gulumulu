@@ -1,9 +1,9 @@
 import { Search as SearchIcon, Edit } from "lucide-react";
 import { useState } from "react";
-import { chats } from "@/lib/mock-data";
+import { chats, type ChatItem } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export function ChatList() {
+export function ChatList({ onOpen }: { onOpen?: (c: ChatItem) => void } = {}) {
   const [query, setQuery] = useState("");
   const filtered = chats.filter((c) =>
     c.username.toLowerCase().includes(query.toLowerCase())
@@ -32,7 +32,7 @@ export function ChatList() {
       <ul className="divide-y divide-border">
         {filtered.map((c) => (
           <li key={c.id}>
-            <button className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-pink-soft/40">
+            <button onClick={() => onOpen?.(c)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-pink-soft/40">
               <div className="relative shrink-0">
                 <img
                   src={c.avatar}
