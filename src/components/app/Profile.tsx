@@ -125,6 +125,15 @@ export function Profile() {
           </div>
         ))}
       </div>
+
+      {editing && (
+        <EditProfileModal
+          initial={data}
+          onClose={() => setEditing(false)}
+          onSave={(p) => { setData(p); setEditing(false); }}
+        />
+      )}
+      {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
     </div>
   );
 }
