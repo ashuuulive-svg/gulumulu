@@ -1,23 +1,28 @@
-import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive, LogOut } from "lucide-react";
 import { useState } from "react";
-import { profile } from "@/lib/mock-data";
+import { profile as demoProfile } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Profile() {
+  const { profile: realProfile, signOut, refreshProfile } = useAuth();
   const [tab, setTab] = useState<"grid" | "tagged">("grid");
   const [editing, setEditing] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [data, setData] = useState<ProfileEdit>({
-    avatar: profile.avatar,
-    fullName: profile.fullName,
-    username: profile.username,
-    bio: profile.bio,
-    isPrivate: true,
-  });
-  const images = tab === "grid" ? profile.grid : profile.tagged;
+
+  // Compose display data: real profile fields + demo grid/stats (Phase 1 doesn't include posts yet).
+  const data: ProfileEdit = {
+    avatar: realProfile?.avatar_url || demoProfile.avatar,
+    fullName: realProfile?.full_name || demoProfile.fullName,
+    username: realProfile?.username || demoProfile.username,
+    bio: realProfile?.bio || "",
+    isPrivate: realProfile?.is_private ?? false,
+  };
+  const images = tab === "grid" ? demoProfile.grid : demoProfile.tagged;
+
 
   return (
     <div className="flex flex-1 flex-col">
@@ -34,12 +39,18 @@ export function Profile() {
             <Menu className="h-6 w-6 text-foreground" />
           </button>
           {menuOpen && (
-            <div className="absolute right-10 top-10 z-40 w-48 overflow-hidden rounded-2xl bg-card shadow-card">
+            <div className="absolute right-10 top-10 z-40 w-52 overflow-hidden rounded-2xl bg-card shadow-card">
               <button
                 onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
                 className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 <Archive className="h-4 w-4" /> Archives & Highlights
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); signOut(); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
               </button>
             </div>
           )}
@@ -57,9 +68,9 @@ export function Profile() {
           </div>
           <dl className="flex flex-1 justify-around text-center">
             {[
-              { k: "Posts", v: profile.posts },
-              { k: "Followers", v: profile.followers },
-              { k: "Following", v: profile.following },
+              { k: "Posts", v: demoProfile.posts },
+              { k: "Followers", v: demoProfile.followers },
+              { k: "Following", v: demoProfile.following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
@@ -73,14 +84,14 @@ export function Profile() {
 
         <div className="mt-4 space-y-0.5">
           <p className="text-sm font-semibold text-foreground">{data.fullName}</p>
-          <p className="text-xs text-muted-foreground">{profile.category}</p>
+          <p className="text-xs text-muted-foreground">{demoProfile.category}</p>
           <p className="whitespace-pre-line text-sm text-foreground">{data.bio}</p>
           <a
-            href={`https://${profile.website}`}
+            href={`https://${demoProfile.website}`}
             className="inline-flex items-center gap-1 text-sm font-medium text-foreground"
           >
             <LinkIcon className="h-3.5 w-3.5" />
-            {profile.website}
+            {demoProfile.website}
           </a>
         </div>
 
@@ -130,7 +141,7 @@ export function Profile() {
         <EditProfileModal
           initial={data}
           onClose={() => setEditing(false)}
-          onSave={(p) => { setData(p); setEditing(false); }}
+          onSaved={() => { setEditing(false); refreshProfile(); }}
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}

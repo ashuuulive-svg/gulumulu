@@ -1,5 +1,8 @@
 import { useRef, useState } from "react";
-import { X, Camera, Lock, Globe } from "lucide-react";
+import { X, Camera, Lock, Globe, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type ProfileEdit = {
   avatar: string;
@@ -12,18 +15,76 @@ export type ProfileEdit = {
 export function EditProfileModal({
   initial,
   onClose,
-  onSave,
+  onSaved,
 }: {
   initial: ProfileEdit;
   onClose: () => void;
-  onSave: (p: ProfileEdit) => void;
+  onSaved: () => void;
 }) {
+  const { user, profile } = useAuth();
   const [data, setData] = useState<ProfileEdit>(initial);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const onPick = (f?: File) => {
     if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error("Image too large", { description: "Please choose an image under 5 MB." });
+      return;
+    }
+    setAvatarFile(f);
     setData({ ...data, avatar: URL.createObjectURL(f) });
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    if (data.username.length < 3 || !/^[a-z0-9_]+$/.test(data.username)) {
+      toast.error("Username must be 3+ chars (letters, numbers, underscore).");
+      return;
+    }
+    setSaving(true);
+    try {
+      let avatar_url = profile?.avatar_url ?? null;
+      if (avatarFile) {
+        const ext = avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("avatars")
+          .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+        if (upErr) throw upErr;
+        avatar_url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
+      }
+
+      // If username changed, verify availability
+      if (data.username.toLowerCase() !== (profile?.username.toLowerCase() ?? "")) {
+        const { data: avail } = await supabase.rpc("username_available", { _username: data.username });
+        if (!avail) {
+          toast.error("That username is taken.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          username: data.username,
+          full_name: data.fullName || null,
+          bio: data.bio || "",
+          is_private: data.isPrivate,
+          avatar_url,
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast.success("Profile updated");
+      onSaved();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error("Could not save", { description: msg });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -35,9 +96,11 @@ export function EditProfileModal({
           </button>
           <h2 className="text-base font-semibold text-foreground">Edit Profile</h2>
           <button
-            onClick={() => onSave(data)}
-            className="rounded-full bg-foreground px-4 py-1.5 text-sm font-semibold text-background"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 text-sm font-semibold text-background disabled:opacity-60"
           >
+            {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Save
           </button>
         </header>

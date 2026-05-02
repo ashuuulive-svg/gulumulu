@@ -11,6 +11,7 @@ import { ProfileSetup } from "@/components/app/ProfileSetup";
 import { ChatRoom } from "@/components/app/ChatRoom";
 import { CreatePostModal } from "@/components/app/CreatePostModal";
 import type { ChatItem } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,17 +28,43 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Stage = "onboarding" | "login" | "setup" | "app";
-
 function Index() {
-  const [stage, setStage] = useState<Stage>("onboarding");
+  const { session, profile, loading, setupComplete } = useAuth();
+  const [seenOnboarding, setSeenOnboarding] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("gulumulu.onboarded") === "1";
+  });
   const [tab, setTab] = useState<Tab>("home");
   const [activeChat, setActiveChat] = useState<ChatItem | null>(null);
   const [creating, setCreating] = useState(false);
 
-  if (stage === "onboarding") return <Onboarding onDone={() => setStage("login")} />;
-  if (stage === "login") return <Login onLogin={() => setStage("setup")} />;
-  if (stage === "setup") return <ProfileSetup onDone={() => setStage("app")} />;
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+      </main>
+    );
+  }
+
+  // 1. First-time visitor → onboarding cards
+  if (!seenOnboarding) {
+    return (
+      <Onboarding
+        onDone={() => {
+          localStorage.setItem("gulumulu.onboarded", "1");
+          setSeenOnboarding(true);
+        }}
+      />
+    );
+  }
+
+  // 2. Not signed in → login
+  if (!session) return <Login />;
+
+  // 3. Signed in but profile not set up → setup wizard
+  if (!profile || !setupComplete) {
+    return <ProfileSetup onDone={() => { /* AuthProvider will refresh; setupComplete becomes true */ }} />;
+  }
 
   if (activeChat) {
     return (
