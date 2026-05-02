@@ -1,10 +1,22 @@
-import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive } from "lucide-react";
 import { useState } from "react";
 import { profile } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
+import { ArchiveSheet } from "./ArchiveSheet";
 
 export function Profile() {
   const [tab, setTab] = useState<"grid" | "tagged">("grid");
+  const [editing, setEditing] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [data, setData] = useState<ProfileEdit>({
+    avatar: profile.avatar,
+    fullName: profile.fullName,
+    username: profile.username,
+    bio: profile.bio,
+    isPrivate: true,
+  });
   const images = tab === "grid" ? profile.grid : profile.tagged;
 
   return (
