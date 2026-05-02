@@ -39,12 +39,18 @@ export function Profile() {
             <Menu className="h-6 w-6 text-foreground" />
           </button>
           {menuOpen && (
-            <div className="absolute right-10 top-10 z-40 w-48 overflow-hidden rounded-2xl bg-card shadow-card">
+            <div className="absolute right-10 top-10 z-40 w-52 overflow-hidden rounded-2xl bg-card shadow-card">
               <button
                 onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
                 className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 <Archive className="h-4 w-4" /> Archives & Highlights
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); signOut(); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
               </button>
             </div>
           )}
@@ -62,9 +68,9 @@ export function Profile() {
           </div>
           <dl className="flex flex-1 justify-around text-center">
             {[
-              { k: "Posts", v: profile.posts },
-              { k: "Followers", v: profile.followers },
-              { k: "Following", v: profile.following },
+              { k: "Posts", v: demoProfile.posts },
+              { k: "Followers", v: demoProfile.followers },
+              { k: "Following", v: demoProfile.following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
@@ -78,14 +84,14 @@ export function Profile() {
 
         <div className="mt-4 space-y-0.5">
           <p className="text-sm font-semibold text-foreground">{data.fullName}</p>
-          <p className="text-xs text-muted-foreground">{profile.category}</p>
+          <p className="text-xs text-muted-foreground">{demoProfile.category}</p>
           <p className="whitespace-pre-line text-sm text-foreground">{data.bio}</p>
           <a
-            href={`https://${profile.website}`}
+            href={`https://${demoProfile.website}`}
             className="inline-flex items-center gap-1 text-sm font-medium text-foreground"
           >
             <LinkIcon className="h-3.5 w-3.5" />
-            {profile.website}
+            {demoProfile.website}
           </a>
         </div>
 
@@ -135,7 +141,7 @@ export function Profile() {
         <EditProfileModal
           initial={data}
           onClose={() => setEditing(false)}
-          onSave={(p) => { setData(p); setEditing(false); }}
+          onSaved={() => { setEditing(false); refreshProfile(); }}
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
