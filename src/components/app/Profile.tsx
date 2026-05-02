@@ -23,20 +23,35 @@ export function Profile() {
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-1.5">
-          <Lock className="h-4 w-4 text-foreground" />
-          <h1 className="text-lg font-semibold text-foreground">{profile.username}</h1>
+          {data.isPrivate && <Lock className="h-4 w-4 text-foreground" />}
+          <h1 className="text-lg font-semibold text-foreground">{data.username}</h1>
         </div>
-        <button aria-label="Settings" className="rounded-full p-1.5 hover:bg-pink-soft">
-          <Menu className="h-6 w-6 text-foreground" />
-        </button>
+        <div className="relative flex items-center gap-1">
+          <button onClick={() => setMenuOpen((v) => !v)} aria-label="More" className="rounded-full p-1.5 hover:bg-pink-soft">
+            <MoreVertical className="h-6 w-6 text-foreground" />
+          </button>
+          <button aria-label="Settings" className="rounded-full p-1.5 hover:bg-pink-soft">
+            <Menu className="h-6 w-6 text-foreground" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-10 top-10 z-40 w-48 overflow-hidden rounded-2xl bg-card shadow-card">
+              <button
+                onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+              >
+                <Archive className="h-4 w-4" /> Archives & Highlights
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <section className="px-4 py-5">
         <div className="flex items-center gap-6">
           <div className="story-ring rounded-full p-[2.5px]">
             <img
-              src={profile.avatar}
-              alt={profile.fullName}
+              src={data.avatar}
+              alt={data.fullName}
               className="h-20 w-20 rounded-full border-2 border-card bg-pink-soft object-cover"
             />
           </div>
@@ -57,9 +72,9 @@ export function Profile() {
         </div>
 
         <div className="mt-4 space-y-0.5">
-          <p className="text-sm font-semibold text-foreground">{profile.fullName}</p>
+          <p className="text-sm font-semibold text-foreground">{data.fullName}</p>
           <p className="text-xs text-muted-foreground">{profile.category}</p>
-          <p className="whitespace-pre-line text-sm text-foreground">{profile.bio}</p>
+          <p className="whitespace-pre-line text-sm text-foreground">{data.bio}</p>
           <a
             href={`https://${profile.website}`}
             className="inline-flex items-center gap-1 text-sm font-medium text-foreground"
@@ -70,7 +85,10 @@ export function Profile() {
         </div>
 
         <div className="mt-4 flex gap-2">
-          <button className="flex-1 rounded-lg bg-pink-soft py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent">
+          <button
+            onClick={() => setEditing(true)}
+            className="flex-1 rounded-lg bg-pink-soft py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+          >
             Edit Profile
           </button>
           <button className="flex-1 rounded-lg bg-pink-soft py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent">
