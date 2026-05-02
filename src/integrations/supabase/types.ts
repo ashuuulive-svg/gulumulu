@@ -14,16 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          is_private: boolean
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          is_private?: boolean
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          is_private?: boolean
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      username_available: { Args: { _username: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      gender_type: "male" | "female" | "non_binary" | "prefer_not_to_say"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +185,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      gender_type: ["male", "female", "non_binary", "prefer_not_to_say"],
+    },
   },
 } as const
