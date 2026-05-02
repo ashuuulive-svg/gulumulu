@@ -85,14 +85,9 @@ function Index() {
           {tab === "chat" && <ChatList onOpen={setActiveChat} />}
           {tab === "profile" && <Profile />}
         </div>
-        <BottomNav active={tab} onChange={setTab} />
+        <BottomNav active={tab} onChange={setTab} onCreate={() => setCreating(true)} />
       </div>
-      {creating && (
-        <CreatePostModal
-          onClose={() => setCreating(false)}
-          onShare={() => setCreating(false)}
-        />
-      )}
+      {creating && <CreatePostModal onClose={() => setCreating(false)} />}
     </main>
   );
 }
