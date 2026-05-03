@@ -151,13 +151,20 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-0.5 bg-card">
-        {images.map((src, i) => (
-          <div key={i} className="aspect-square overflow-hidden bg-pink-soft">
-            <img src={src} alt={`Post ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
-          </div>
-        ))}
-      </div>
+      {images.length === 0 ? (
+        <div className="bg-card px-6 py-16 text-center">
+          <p className="text-sm font-semibold text-foreground">No posts yet</p>
+          <p className="mt-1 text-xs text-muted-foreground">Share your first moment to see it here.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-0.5 bg-card">
+          {images.map((src, i) => (
+            <div key={i} className="aspect-square overflow-hidden bg-pink-soft">
+              <img src={src} alt={`Post ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+            </div>
+          ))}
+        </div>
+      )}
 
       {editing && (
         <EditProfileModal
