@@ -10,6 +10,10 @@ export type Profile = {
   gender: "male" | "female" | "non_binary" | "prefer_not_to_say" | null;
   avatar_url: string | null;
   is_private: boolean;
+  is_verified: boolean;
+  is_banned: boolean;
+  ban_reason: string | null;
+  banned_at: string | null;
 };
 
 type AuthCtx = {
@@ -17,8 +21,8 @@ type AuthCtx = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  /** True when the user has finished the setup wizard (has a non-placeholder username + at least one of: avatar / bio / gender). */
   setupComplete: boolean;
+  isAdmin: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -28,7 +32,7 @@ const Ctx = createContext<AuthCtx | undefined>(undefined);
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, full_name, bio, gender, avatar_url, is_private")
+    .select("id, username, full_name, bio, gender, avatar_url, is_private, is_verified, is_banned, ban_reason, banned_at")
     .eq("id", userId)
     .maybeSingle();
   if (error) {
@@ -38,46 +42,73 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   return (data as Profile | null) ?? null;
 }
 
+async function fetchIsAdmin(userId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  return !!data;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const loadAll = (userId: string) => {
+    fetchProfile(userId).then(setProfile);
+    fetchIsAdmin(userId).then(setIsAdmin);
+  };
+
   useEffect(() => {
-    // 1. Subscribe FIRST so we never miss an event.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
-        // Defer DB call to avoid deadlock inside the callback
-        setTimeout(() => {
-          fetchProfile(s.user.id).then(setProfile);
-        }, 0);
+        setTimeout(() => loadAll(s.user.id), 0);
       } else {
         setProfile(null);
+        setIsAdmin(false);
       }
     });
 
-    // 2. Then read existing session.
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
-        setProfile(await fetchProfile(data.session.user.id));
+        loadAll(data.session.user.id);
       }
       setLoading(false);
     });
 
-    return () => sub.subscription.unsubscribe();
+    // Realtime: keep profile fresh (e.g. ban applied by admin)
+    const ch = supabase
+      .channel("profile-self")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (payload) => {
+        const row = payload.new as Profile;
+        if (row?.id && row.id === session?.user?.id) setProfile(row);
+      })
+      .subscribe();
+
+    return () => {
+      sub.subscription.unsubscribe();
+      supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refreshProfile = async () => {
     if (!session?.user) return;
     setProfile(await fetchProfile(session.user.id));
+    setIsAdmin(await fetchIsAdmin(session.user.id));
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
     setSession(null);
+    setIsAdmin(false);
   };
 
   // Heuristic: setup is complete once user has filled bio OR gender OR uploaded an avatar.
@@ -94,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         loading,
         setupComplete,
+        isAdmin,
         refreshProfile,
         signOut,
       }}
