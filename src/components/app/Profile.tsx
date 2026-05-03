@@ -1,27 +1,42 @@
-import { Menu, Grid3x3, UserSquare2, Link as LinkIcon, Lock, MoreVertical, Archive, LogOut } from "lucide-react";
-import { useState } from "react";
-import { profile as demoProfile } from "@/lib/mock-data";
+import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
-export function Profile() {
-  const { profile: realProfile, signOut, refreshProfile } = useAuth();
+export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
+  const { profile: realProfile, signOut, refreshProfile, user } = useAuth();
   const [tab, setTab] = useState<"grid" | "tagged">("grid");
   const [editing, setEditing] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [postCount, setPostCount] = useState(0);
+  const [myImages, setMyImages] = useState<string[]>([]);
 
-  // Compose display data: real profile fields + demo grid/stats (Phase 1 doesn't include posts yet).
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("posts")
+      .select("id, image_url")
+      .eq("author_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const rows = data ?? [];
+        setPostCount(rows.length);
+        setMyImages(rows.map((r) => r.image_url));
+      });
+  }, [user?.id]);
+
   const data: ProfileEdit = {
-    avatar: realProfile?.avatar_url || demoProfile.avatar,
-    fullName: realProfile?.full_name || demoProfile.fullName,
-    username: realProfile?.username || demoProfile.username,
+    avatar: realProfile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${realProfile?.username ?? "u"}`,
+    fullName: realProfile?.full_name || "",
+    username: realProfile?.username || "",
     bio: realProfile?.bio || "",
     isPrivate: realProfile?.is_private ?? false,
   };
-  const images = tab === "grid" ? demoProfile.grid : demoProfile.tagged;
+  const images = tab === "grid" ? myImages : [];
 
 
   return (
