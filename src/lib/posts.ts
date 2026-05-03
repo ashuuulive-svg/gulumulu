@@ -7,7 +7,7 @@ export type FeedPost = {
   caption: string | null;
   location: string | null;
   created_at: string;
-  author: { username: string; avatar_url: string | null; full_name: string | null } | null;
+  author: { username: string; avatar_url: string | null; full_name: string | null; is_verified?: boolean } | null;
   like_count: number;
   comment_count: number;
   liked_by_me: boolean;
@@ -62,7 +62,7 @@ export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
   const authorIds = Array.from(new Set(posts.map((p) => p.author_id)));
 
   const [{ data: profiles }, { data: likes }, { data: myLikes }, { data: comments }] = await Promise.all([
-    supabase.from("profiles").select("id, username, avatar_url, full_name").in("id", authorIds),
+    supabase.from("profiles").select("id, username, avatar_url, full_name, is_verified").in("id", authorIds),
     supabase.from("post_likes").select("post_id").in("post_id", ids),
     supabase.from("post_likes").select("post_id").in("post_id", ids).eq("user_id", currentUserId),
     supabase.from("post_comments").select("post_id").in("post_id", ids),

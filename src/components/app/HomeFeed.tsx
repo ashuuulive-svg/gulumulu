@@ -1,6 +1,5 @@
-import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin } from "lucide-react";
+import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin, BadgeCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { stories } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,17 +10,8 @@ import { toast } from "sonner";
 function Stories() {
   return (
     <section aria-label="Stories" className="border-b border-border bg-card">
-      <div className="scrollbar-hide flex gap-4 overflow-x-auto px-4 py-4">
-        {stories.map((s) => (
-          <button key={s.id} className="flex w-16 shrink-0 flex-col items-center gap-1.5">
-            <div className={cn("rounded-full p-[2.5px]", s.hasNewStory ? "story-ring" : "bg-border")}>
-              <div className="rounded-full bg-card p-[2px]">
-                <img src={s.avatar} alt={s.username} className="h-14 w-14 rounded-full bg-pink-soft object-cover" />
-              </div>
-            </div>
-            <span className="max-w-full truncate text-[11px] text-foreground">{s.username}</span>
-          </button>
-        ))}
+      <div className="px-4 py-6 text-center">
+        <p className="text-xs text-muted-foreground">No stories yet · Coming soon</p>
       </div>
     </section>
   );
@@ -67,7 +57,12 @@ function PostCard({
             <img src={avatar} alt="" className="h-9 w-9 rounded-full bg-card object-cover" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-foreground">{username}</p>
+            <p className="flex items-center gap-1 text-sm font-semibold text-foreground">
+              {username}
+              {(post.author as { is_verified?: boolean } | null)?.is_verified && (
+                <BadgeCheck className="h-3.5 w-3.5 fill-sky-500 text-white" />
+              )}
+            </p>
             {post.location && (
               <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <MapPin className="h-3 w-3" />

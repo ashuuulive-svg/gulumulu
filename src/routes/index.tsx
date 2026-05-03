@@ -10,6 +10,8 @@ import { Login } from "@/components/app/Login";
 import { ProfileSetup } from "@/components/app/ProfileSetup";
 import { ChatRoom } from "@/components/app/ChatRoom";
 import { CreatePostModal } from "@/components/app/CreatePostModal";
+import { BannedScreen } from "@/components/app/BannedScreen";
+import { AdminPanel } from "@/components/app/AdminPanel";
 import type { ChatItem } from "@/lib/mock-data";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,7 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { session, profile, loading, setupComplete } = useAuth();
+  const { session, profile, loading, setupComplete, isAdmin } = useAuth();
   const [seenOnboarding, setSeenOnboarding] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("gulumulu.onboarded") === "1";
@@ -37,6 +39,7 @@ function Index() {
   const [tab, setTab] = useState<Tab>("home");
   const [activeChat, setActiveChat] = useState<ChatItem | null>(null);
   const [creating, setCreating] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   if (loading) {
     return (
@@ -66,6 +69,12 @@ function Index() {
     return <ProfileSetup onDone={() => { /* AuthProvider will refresh; setupComplete becomes true */ }} />;
   }
 
+  // 4. Banned users see the lock screen with the reason.
+  if (profile.is_banned) return <BannedScreen />;
+
+  // 5. Admin panel (only accessible to admins)
+  if (adminOpen && isAdmin) return <AdminPanel onBack={() => setAdminOpen(false)} />;
+
   if (activeChat) {
     return (
       <main className="min-h-screen bg-background">
@@ -83,7 +92,7 @@ function Index() {
           {tab === "home" && <HomeFeed onCreate={() => setCreating(true)} />}
           {tab === "search" && <SearchExplore />}
           {tab === "chat" && <ChatList onOpen={setActiveChat} />}
-          {tab === "profile" && <Profile />}
+          {tab === "profile" && <Profile onOpenAdmin={isAdmin ? () => setAdminOpen(true) : undefined} />}
         </div>
         <BottomNav active={tab} onChange={setTab} onCreate={() => setCreating(true)} />
       </div>

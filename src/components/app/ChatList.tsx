@@ -1,13 +1,9 @@
-import { Search as SearchIcon, Edit } from "lucide-react";
+import { Search as SearchIcon, Edit, MessageCircle } from "lucide-react";
 import { useState } from "react";
-import { chats, type ChatItem } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
+import type { ChatItem } from "@/lib/mock-data";
 
-export function ChatList({ onOpen }: { onOpen?: (c: ChatItem) => void } = {}) {
+export function ChatList(_props: { onOpen?: (c: ChatItem) => void } = {}) {
   const [query, setQuery] = useState("");
-  const filtered = chats.filter((c) =>
-    c.username.toLowerCase().includes(query.toLowerCase())
-  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -29,41 +25,13 @@ export function ChatList({ onOpen }: { onOpen?: (c: ChatItem) => void } = {}) {
         </div>
       </header>
 
-      <ul className="divide-y divide-border">
-        {filtered.map((c) => (
-          <li key={c.id}>
-            <button onClick={() => onOpen?.(c)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-pink-soft/40">
-              <div className="relative shrink-0">
-                <img
-                  src={c.avatar}
-                  alt=""
-                  className="h-14 w-14 rounded-full bg-pink-soft object-cover"
-                />
-                {c.online && (
-                  <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-card bg-online" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-foreground">{c.username}</p>
-                <p
-                  className={cn(
-                    "truncate text-sm",
-                    c.unread ? "font-medium text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {c.lastMessage} · {c.timestamp}
-                </p>
-              </div>
-              {c.unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-unread" />}
-            </button>
-          </li>
-        ))}
-        {filtered.length === 0 && (
-          <li className="px-4 py-12 text-center text-sm text-muted-foreground">
-            No conversations found
-          </li>
-        )}
-      </ul>
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-soft">
+          <MessageCircle className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <p className="mt-4 text-sm font-semibold text-foreground">No conversations yet</p>
+        <p className="mt-1 text-xs text-muted-foreground">Real-time DMs · Coming soon</p>
+      </div>
     </div>
   );
 }
