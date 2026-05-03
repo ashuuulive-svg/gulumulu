@@ -92,7 +92,7 @@ function Index() {
           {tab === "home" && <HomeFeed onCreate={() => setCreating(true)} />}
           {tab === "search" && <SearchExplore />}
           {tab === "chat" && <ChatList onOpen={setActiveChat} />}
-          {tab === "profile" && <Profile />}
+          {tab === "profile" && <Profile onOpenAdmin={isAdmin ? () => setAdminOpen(true) : undefined} />}
         </div>
         <BottomNav active={tab} onChange={setTab} onCreate={() => setCreating(true)} />
       </div>
