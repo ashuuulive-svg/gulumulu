@@ -45,6 +45,7 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         <div className="flex items-center gap-1.5">
           {data.isPrivate && <Lock className="h-4 w-4 text-foreground" />}
           <h1 className="text-lg font-semibold text-foreground">{data.username}</h1>
+          {realProfile?.is_verified && <BadgeCheck className="h-5 w-5 fill-sky-500 text-white" />}
         </div>
         <div className="relative flex items-center gap-1">
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="More" className="rounded-full p-1.5 hover:bg-pink-soft">
@@ -54,13 +55,27 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
             <Menu className="h-6 w-6 text-foreground" />
           </button>
           {menuOpen && (
-            <div className="absolute right-10 top-10 z-40 w-52 overflow-hidden rounded-2xl bg-card shadow-card">
+            <div className="absolute right-10 top-10 z-40 w-56 overflow-hidden rounded-2xl bg-card shadow-card">
+              <button
+                onClick={() => { setMenuOpen(false); setEditing(true); }}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+              >
+                Edit Profile
+              </button>
               <button
                 onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
-                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 <Archive className="h-4 w-4" /> Archives & Highlights
               </button>
+              {onOpenAdmin && (
+                <button
+                  onClick={() => { setMenuOpen(false); onOpenAdmin(); }}
+                  className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+                >
+                  <ShieldCheck className="h-4 w-4" /> Secretary Panel
+                </button>
+              )}
               <button
                 onClick={() => { setMenuOpen(false); signOut(); }}
                 className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
@@ -83,9 +98,9 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
           </div>
           <dl className="flex flex-1 justify-around text-center">
             {[
-              { k: "Posts", v: demoProfile.posts },
-              { k: "Followers", v: demoProfile.followers },
-              { k: "Following", v: demoProfile.following },
+              { k: "Posts", v: postCount },
+              { k: "Followers", v: 0 },
+              { k: "Following", v: 0 },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
@@ -98,16 +113,8 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         </div>
 
         <div className="mt-4 space-y-0.5">
-          <p className="text-sm font-semibold text-foreground">{data.fullName}</p>
-          <p className="text-xs text-muted-foreground">{demoProfile.category}</p>
-          <p className="whitespace-pre-line text-sm text-foreground">{data.bio}</p>
-          <a
-            href={`https://${demoProfile.website}`}
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground"
-          >
-            <LinkIcon className="h-3.5 w-3.5" />
-            {demoProfile.website}
-          </a>
+          {data.fullName && <p className="text-sm font-semibold text-foreground">{data.fullName}</p>}
+          {data.bio && <p className="whitespace-pre-line text-sm text-foreground">{data.bio}</p>}
         </div>
 
         <div className="mt-4 flex gap-2">
