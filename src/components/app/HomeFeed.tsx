@@ -249,10 +249,6 @@ export function HomeFeed({
             onOpenAuthor={() => onOpenUser?.(p.author_id)}
           />
         ))}
-            onToggleLike={() => onToggleLike(p)}
-            onOpenComments={() => setOpenComments(p.id)}
-          />
-        ))}
       </div>
 
       {openComments && <CommentsSheet postId={openComments} onClose={() => setOpenComments(null)} />}
