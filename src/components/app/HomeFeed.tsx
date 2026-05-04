@@ -101,7 +101,7 @@ function PostCard({
           <button onClick={onOpenComments} aria-label="Comment">
             <MessageCircle className="h-6 w-6 text-foreground" />
           </button>
-          <button aria-label="Share">
+          <button onClick={() => sharePost(post)} aria-label="Share">
             <Send className="h-6 w-6 text-foreground" />
           </button>
         </div>
@@ -130,7 +130,33 @@ function PostCard({
   );
 }
 
-export function HomeFeed({ onCreate }: { onCreate?: () => void } = {}) {
+async function sharePost(post: FeedPost) {
+  const url = typeof window !== "undefined" ? window.location.origin : "";
+  const shareData = {
+    title: `@${post.author?.username ?? "user"} on GuluMulu`,
+    text: post.caption ?? `Check out this post by @${post.author?.username ?? "user"}`,
+    url: `${url}/?post=${post.id}`,
+  };
+  try {
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      await navigator.share(shareData);
+      return;
+    }
+    await navigator.clipboard.writeText(shareData.url);
+    toast.success("Link copied to clipboard");
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
+    toast.error("Could not share");
+  }
+}
+
+export function HomeFeed({
+  onCreate,
+  onOpenUser,
+}: {
+  onCreate?: () => void;
+  onOpenUser?: (userId: string) => void;
+}) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,6 +244,11 @@ export function HomeFeed({ onCreate }: { onCreate?: () => void } = {}) {
           <PostCard
             key={p.id}
             post={p}
+            onToggleLike={() => onToggleLike(p)}
+            onOpenComments={() => setOpenComments(p.id)}
+            onOpenAuthor={() => onOpenUser?.(p.author_id)}
+          />
+        ))}
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
           />
