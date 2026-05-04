@@ -21,10 +21,12 @@ function PostCard({
   post,
   onToggleLike,
   onOpenComments,
+  onOpenAuthor,
 }: {
   post: FeedPost;
   onToggleLike: () => void;
   onOpenComments: () => void;
+  onOpenAuthor: () => void;
 }) {
   const [saved, setSaved] = useState(false);
   const [burst, setBurst] = useState(false);
@@ -52,12 +54,12 @@ function PostCard({
   return (
     <article className="overflow-hidden rounded-2xl bg-card shadow-card">
       <header className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
+        <button onClick={onOpenAuthor} className="flex items-center gap-3 text-left">
           <div className="story-ring rounded-full p-[2px]">
             <img src={avatar} alt="" className="h-9 w-9 rounded-full bg-card object-cover" />
           </div>
           <div className="leading-tight">
-            <p className="flex items-center gap-1 text-sm font-semibold text-foreground">
+            <p className="flex items-center gap-1 text-sm font-semibold text-foreground hover:underline">
               {username}
               {(post.author as { is_verified?: boolean } | null)?.is_verified && (
                 <BadgeCheck className="h-3.5 w-3.5 fill-sky-500 text-white" />
@@ -70,7 +72,7 @@ function PostCard({
               </p>
             )}
           </div>
-        </div>
+        </button>
         <button aria-label="More options" className="rounded-full p-1.5 hover:bg-pink-soft">
           <MoreHorizontal className="h-5 w-5 text-foreground" />
         </button>
@@ -99,7 +101,7 @@ function PostCard({
           <button onClick={onOpenComments} aria-label="Comment">
             <MessageCircle className="h-6 w-6 text-foreground" />
           </button>
-          <button aria-label="Share">
+          <button onClick={() => sharePost(post)} aria-label="Share">
             <Send className="h-6 w-6 text-foreground" />
           </button>
         </div>
@@ -128,7 +130,33 @@ function PostCard({
   );
 }
 
-export function HomeFeed({ onCreate }: { onCreate?: () => void } = {}) {
+async function sharePost(post: FeedPost) {
+  const url = typeof window !== "undefined" ? window.location.origin : "";
+  const shareData = {
+    title: `@${post.author?.username ?? "user"} on GuluMulu`,
+    text: post.caption ?? `Check out this post by @${post.author?.username ?? "user"}`,
+    url: `${url}/?post=${post.id}`,
+  };
+  try {
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      await navigator.share(shareData);
+      return;
+    }
+    await navigator.clipboard.writeText(shareData.url);
+    toast.success("Link copied to clipboard");
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return;
+    toast.error("Could not share");
+  }
+}
+
+export function HomeFeed({
+  onCreate,
+  onOpenUser,
+}: {
+  onCreate?: () => void;
+  onOpenUser?: (userId: string) => void;
+}) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,6 +246,7 @@ export function HomeFeed({ onCreate }: { onCreate?: () => void } = {}) {
             post={p}
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
+            onOpenAuthor={() => onOpenUser?.(p.author_id)}
           />
         ))}
       </div>
