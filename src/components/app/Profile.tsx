@@ -15,6 +15,8 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [postCount, setPostCount] = useState(0);
   const [myImages, setMyImages] = useState<string[]>([]);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -28,6 +30,10 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         setPostCount(rows.length);
         setMyImages(rows.map((r) => r.image_url));
       });
+    getFollowStats(user.id, user.id).then((s) => {
+      setFollowers(s.followers);
+      setFollowing(s.following);
+    });
   }, [user?.id]);
 
   const data: ProfileEdit = {
