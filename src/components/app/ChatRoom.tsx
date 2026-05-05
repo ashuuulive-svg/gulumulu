@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMessages, sendMessage, type Message } from "@/lib/chat";
+import { ZegoCall } from "./ZegoCall";
 import { toast } from "sonner";
 
 export type ChatPeer = {
