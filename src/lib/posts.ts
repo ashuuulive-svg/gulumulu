@@ -87,6 +87,7 @@ export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
 
   return posts.map((p) => ({
     ...p,
+    media_type: (p.media_type === "video" ? "video" : "image") as "image" | "video",
     author: profileMap.get(p.author_id) ?? null,
     like_count: likeCount.get(p.id) ?? 0,
     comment_count: commentCount.get(p.id) ?? 0,
