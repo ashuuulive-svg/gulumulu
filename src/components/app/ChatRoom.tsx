@@ -102,15 +102,25 @@ export function ChatRoom({
             <p className="text-[11px] text-muted-foreground">Direct message</p>
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-40">
-          <button aria-label="Voice call (coming soon)" disabled className="rounded-full p-2">
+        <div className="flex items-center gap-1">
+          <button onClick={() => setCallMode("voice")} aria-label="Voice call" className="rounded-full p-2 hover:bg-pink-soft">
             <Phone className="h-5 w-5 text-foreground" />
           </button>
-          <button aria-label="Video call (coming soon)" disabled className="rounded-full p-2">
+          <button onClick={() => setCallMode("video")} aria-label="Video call" className="rounded-full p-2 hover:bg-pink-soft">
             <Video className="h-5 w-5 text-foreground" />
           </button>
         </div>
       </header>
+
+      {callMode && user && (
+        <ZegoCall
+          roomId={roomId}
+          userId={user.id}
+          userName={user.email ?? user.id.slice(0, 6)}
+          mode={callMode}
+          onLeave={() => setCallMode(null)}
+        />
+      )}
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-4">
         {loading ? (
