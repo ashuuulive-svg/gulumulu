@@ -6,17 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CommentsSheet } from "./CommentsSheet";
 import { SuggestedUsers } from "./SuggestedUsers";
+import { StoryRail } from "./StoryRail";
 import { toast } from "sonner";
-
-function Stories() {
-  return (
-    <section aria-label="Stories" className="border-b border-border bg-card">
-      <div className="px-4 py-6 text-center">
-        <p className="text-xs text-muted-foreground">No stories yet · Coming soon</p>
-      </div>
-    </section>
-  );
-}
 
 function PostCard({
   post,
