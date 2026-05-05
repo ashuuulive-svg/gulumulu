@@ -5,6 +5,7 @@ import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { getFollowStats } from "@/lib/follows";
 
 export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const { profile: realProfile, signOut, refreshProfile, user } = useAuth();
