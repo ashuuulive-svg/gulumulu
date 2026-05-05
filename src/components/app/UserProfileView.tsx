@@ -3,6 +3,7 @@ import { ArrowLeft, BadgeCheck, Lock, MessageCircle, Loader2 } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getOrCreateConversation } from "@/lib/chat";
+import { followUser, unfollowUser, getFollowStats } from "@/lib/follows";
 import { toast } from "sonner";
 
 type ViewProfile = {
