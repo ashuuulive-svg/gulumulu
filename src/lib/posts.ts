@@ -4,6 +4,7 @@ export type FeedPost = {
   id: string;
   author_id: string;
   image_url: string;
+  media_type: "image" | "video";
   caption: string | null;
   location: string | null;
   created_at: string;
@@ -22,27 +23,36 @@ export type FeedComment = {
   author: { username: string; avatar_url: string | null } | null;
 };
 
-export async function uploadPostImage(file: File, userId: string): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+export async function uploadPostMedia(
+  file: File,
+  userId: string,
+  bucket: "post-images" | "stories" = "post-images",
+): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || (file.type.startsWith("video") ? "mp4" : "jpg");
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from("post-images").upload(path, file, {
-    contentType: file.type || "image/jpeg",
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    contentType: file.type || (ext === "mp4" ? "video/mp4" : "image/jpeg"),
     upsert: false,
   });
   if (error) throw error;
-  const { data } = supabase.storage.from("post-images").getPublicUrl(path);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
+
+// Backward-compat alias
+export const uploadPostImage = uploadPostMedia;
 
 export async function createPost(input: {
   authorId: string;
   imageUrl: string;
+  mediaType?: "image" | "video";
   caption: string;
   location: string | null;
 }) {
   const { error } = await supabase.from("posts").insert({
     author_id: input.authorId,
     image_url: input.imageUrl,
+    media_type: input.mediaType ?? "image",
     caption: input.caption,
     location: input.location,
   });
@@ -52,7 +62,7 @@ export async function createPost(input: {
 export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
   const { data: posts, error } = await supabase
     .from("posts")
-    .select("id, author_id, image_url, caption, location, created_at")
+    .select("id, author_id, image_url, media_type, caption, location, created_at")
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw error;
@@ -77,6 +87,7 @@ export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
 
   return posts.map((p) => ({
     ...p,
+    media_type: (p.media_type === "video" ? "video" : "image") as "image" | "video",
     author: profileMap.get(p.author_id) ?? null,
     like_count: likeCount.get(p.id) ?? 0,
     comment_count: commentCount.get(p.id) ?? 0,

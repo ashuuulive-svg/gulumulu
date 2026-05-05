@@ -6,17 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CommentsSheet } from "./CommentsSheet";
 import { SuggestedUsers } from "./SuggestedUsers";
+import { StoryRail } from "./StoryRail";
 import { toast } from "sonner";
-
-function Stories() {
-  return (
-    <section aria-label="Stories" className="border-b border-border bg-card">
-      <div className="px-4 py-6 text-center">
-        <p className="text-xs text-muted-foreground">No stories yet · Coming soon</p>
-      </div>
-    </section>
-  );
-}
 
 function PostCard({
   post,
@@ -83,7 +74,17 @@ function PostCard({
         className="relative aspect-[4/5] w-full select-none overflow-hidden bg-pink-soft"
         onClick={onImageClick}
       >
-        <img src={post.image_url} alt={post.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        {post.media_type === "video" ? (
+          <video
+            src={post.image_url}
+            className="h-full w-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img src={post.image_url} alt={post.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        )}
         {burst && (
           <Heart className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 fill-destructive text-destructive opacity-90 animate-in zoom-in-50" />
         )}
@@ -223,7 +224,7 @@ export function HomeFeed({
         </div>
       </header>
 
-      <Stories />
+      <StoryRail onOpenUser={onOpenUser} />
 
       <div className="space-y-4 px-3 py-4">
         {loading && (

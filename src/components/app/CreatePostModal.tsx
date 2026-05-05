@@ -1,8 +1,12 @@
 import { useRef, useState } from "react";
-import { X, ImagePlus, MapPin, Loader2 } from "lucide-react";
+import { X, ImagePlus, MapPin, Loader2, Film } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { uploadPostImage, createPost } from "@/lib/posts";
+import { uploadPostMedia, createPost } from "@/lib/posts";
+import { probeVideoDuration } from "@/lib/stories";
 import { toast } from "sonner";
+
+const POST_VIDEO_MAX_SECONDS = 60;
+const POST_FILE_MAX_BYTES = 50 * 1024 * 1024;
 
 export function CreatePostModal({
   onClose,
@@ -14,18 +18,33 @@ export function CreatePostModal({
   const { user } = useAuth();
   const [file, setFile] = useState<File | undefined>();
   const [preview, setPreview] = useState<string | undefined>();
+  const [isVideo, setIsVideo] = useState(false);
   const [caption, setCaption] = useState("");
   const [location, setLocation] = useState("");
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const onPick = (f?: File) => {
+  const onPick = async (f?: File) => {
     if (!f) return;
-    if (f.size > 10 * 1024 * 1024) {
-      toast.error("Image must be under 10 MB");
+    if (f.size > POST_FILE_MAX_BYTES) {
+      toast.error("File must be under 50 MB");
       return;
     }
+    const video = f.type.startsWith("video");
+    if (video) {
+      try {
+        const dur = await probeVideoDuration(f);
+        if (dur > POST_VIDEO_MAX_SECONDS + 0.5) {
+          toast.error(`Video must be ${POST_VIDEO_MAX_SECONDS}s or less`);
+          return;
+        }
+      } catch {
+        toast.error("Could not read video");
+        return;
+      }
+    }
     setFile(f);
+    setIsVideo(video);
     setPreview(URL.createObjectURL(f));
   };
 
@@ -33,10 +52,11 @@ export function CreatePostModal({
     if (!file || !user) return;
     setBusy(true);
     try {
-      const url = await uploadPostImage(file, user.id);
+      const url = await uploadPostMedia(file, user.id);
       await createPost({
         authorId: user.id,
         imageUrl: url,
+        mediaType: isVideo ? "video" : "image",
         caption: caption.trim(),
         location: location.trim() || null,
       });
@@ -75,18 +95,25 @@ export function CreatePostModal({
             className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-pink-soft"
           >
             {preview ? (
-              <img src={preview} alt="" className="h-full w-full object-cover" />
+              isVideo ? (
+                <video src={preview} className="h-full w-full object-cover" controls playsInline />
+              ) : (
+                <img src={preview} alt="" className="h-full w-full object-cover" />
+              )
             ) : (
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <ImagePlus className="h-10 w-10" />
-                <span className="text-sm font-medium">Select from gallery</span>
+                <div className="flex gap-2">
+                  <ImagePlus className="h-10 w-10" />
+                  <Film className="h-10 w-10" />
+                </div>
+                <span className="text-sm font-medium">Photo or video (max 60s)</span>
               </div>
             )}
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             className="hidden"
             onChange={(e) => onPick(e.target.files?.[0])}
           />
