@@ -214,7 +214,7 @@ export function HomeFeed({
         </div>
       </header>
 
-      <Stories />
+      <StoryRail onOpenUser={onOpenUser} />
 
       <div className="space-y-4 px-3 py-4">
         {loading && (
