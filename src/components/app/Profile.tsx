@@ -106,8 +106,8 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
           <dl className="flex flex-1 justify-around text-center">
             {[
               { k: "Posts", v: postCount },
-              { k: "Followers", v: 0 },
-              { k: "Following", v: 0 },
+              { k: "Followers", v: followers },
+              { k: "Following", v: following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
