@@ -74,7 +74,17 @@ function PostCard({
         className="relative aspect-[4/5] w-full select-none overflow-hidden bg-pink-soft"
         onClick={onImageClick}
       >
-        <img src={post.image_url} alt={post.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        {post.media_type === "video" ? (
+          <video
+            src={post.image_url}
+            className="h-full w-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img src={post.image_url} alt={post.caption ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        )}
         {burst && (
           <Heart className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 fill-destructive text-destructive opacity-90 animate-in zoom-in-50" />
         )}
