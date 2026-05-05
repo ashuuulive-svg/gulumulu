@@ -38,6 +38,24 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -235,11 +253,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      follower_count: { Args: { _user_id: string }; Returns: number }
+      following_count: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_following: {
+        Args: { _follower: string; _following: string }
         Returns: boolean
       }
       username_available: { Args: { _username: string }; Returns: boolean }

@@ -5,6 +5,7 @@ import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { getFollowStats } from "@/lib/follows";
 
 export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const { profile: realProfile, signOut, refreshProfile, user } = useAuth();
@@ -14,6 +15,8 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [postCount, setPostCount] = useState(0);
   const [myImages, setMyImages] = useState<string[]>([]);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -27,6 +30,10 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         setPostCount(rows.length);
         setMyImages(rows.map((r) => r.image_url));
       });
+    getFollowStats(user.id, user.id).then((s) => {
+      setFollowers(s.followers);
+      setFollowing(s.following);
+    });
   }, [user?.id]);
 
   const data: ProfileEdit = {
@@ -99,8 +106,8 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
           <dl className="flex flex-1 justify-around text-center">
             {[
               { k: "Posts", v: postCount },
-              { k: "Followers", v: 0 },
-              { k: "Following", v: 0 },
+              { k: "Followers", v: followers },
+              { k: "Following", v: following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>

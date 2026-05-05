@@ -3,6 +3,7 @@ import { ArrowLeft, BadgeCheck, Lock, MessageCircle, Loader2 } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getOrCreateConversation } from "@/lib/chat";
+import { followUser, unfollowUser, getFollowStats } from "@/lib/follows";
 import { toast } from "sonner";
 
 type ViewProfile = {
@@ -29,6 +30,13 @@ export function UserProfileView({
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [stats, setStats] = useState({ followers: 0, following: 0, isFollowing: false });
+  const [followBusy, setFollowBusy] = useState(false);
+
+  const loadStats = async (pid: string) => {
+    if (!user) return;
+    setStats(await getFollowStats(pid, user.id));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -50,11 +58,13 @@ export function UserProfileView({
       setProfile((p as ViewProfile | null) ?? null);
       setImages((posts ?? []).map((r) => r.image_url));
       setLoading(false);
+      if (p) loadStats(p.id);
     })();
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, user?.id]);
 
   const handleMessage = async () => {
     if (!user || !profile) return;
@@ -66,6 +76,22 @@ export function UserProfileView({
       toast.error(e instanceof Error ? e.message : "Failed to open chat");
     } finally {
       setOpening(false);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!user || !profile || followBusy) return;
+    setFollowBusy(true);
+    const was = stats.isFollowing;
+    setStats((s) => ({ ...s, isFollowing: !was, followers: s.followers + (was ? -1 : 1) }));
+    try {
+      if (was) await unfollowUser(user.id, profile.id);
+      else await followUser(user.id, profile.id);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+      loadStats(profile.id);
+    } finally {
+      setFollowBusy(false);
     }
   };
 
@@ -117,8 +143,8 @@ export function UserProfileView({
           <dl className="flex flex-1 justify-around text-center">
             {[
               { k: "Posts", v: images.length },
-              { k: "Followers", v: 0 },
-              { k: "Following", v: 0 },
+              { k: "Followers", v: stats.followers },
+              { k: "Following", v: stats.following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
@@ -138,8 +164,16 @@ export function UserProfileView({
         </div>
 
         <div className="mt-4 flex gap-2">
-          <button className="flex-1 rounded-lg bg-foreground py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90">
-            Follow
+          <button
+            onClick={handleFollow}
+            disabled={followBusy || profile.id === user?.id}
+            className={
+              stats.isFollowing
+                ? "flex-1 rounded-lg bg-pink-soft py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent disabled:opacity-40"
+                : "flex-1 rounded-lg bg-foreground py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+            }
+          >
+            {followBusy ? "…" : stats.isFollowing ? "Following" : "Follow"}
           </button>
           <button
             onClick={handleMessage}

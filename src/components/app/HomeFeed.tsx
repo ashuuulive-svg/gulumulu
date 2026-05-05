@@ -5,6 +5,7 @@ import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CommentsSheet } from "./CommentsSheet";
+import { SuggestedUsers } from "./SuggestedUsers";
 import { toast } from "sonner";
 
 function Stories() {
@@ -240,6 +241,7 @@ export function HomeFeed({
             </button>
           </div>
         )}
+        {!loading && <SuggestedUsers onOpenUser={onOpenUser} />}
         {posts.map((p) => (
           <PostCard
             key={p.id}
