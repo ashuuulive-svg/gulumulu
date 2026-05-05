@@ -62,7 +62,7 @@ export async function createPost(input: {
 export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
   const { data: posts, error } = await supabase
     .from("posts")
-    .select("id, author_id, image_url, caption, location, created_at")
+    .select("id, author_id, image_url, media_type, caption, location, created_at")
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw error;
