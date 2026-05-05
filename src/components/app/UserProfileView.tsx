@@ -30,6 +30,13 @@ export function UserProfileView({
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [stats, setStats] = useState({ followers: 0, following: 0, isFollowing: false });
+  const [followBusy, setFollowBusy] = useState(false);
+
+  const loadStats = async (pid: string) => {
+    if (!user) return;
+    setStats(await getFollowStats(pid, user.id));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -51,11 +58,13 @@ export function UserProfileView({
       setProfile((p as ViewProfile | null) ?? null);
       setImages((posts ?? []).map((r) => r.image_url));
       setLoading(false);
+      if (p) loadStats(p.id);
     })();
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, user?.id]);
 
   const handleMessage = async () => {
     if (!user || !profile) return;
@@ -67,6 +76,22 @@ export function UserProfileView({
       toast.error(e instanceof Error ? e.message : "Failed to open chat");
     } finally {
       setOpening(false);
+    }
+  };
+
+  const handleFollow = async () => {
+    if (!user || !profile || followBusy) return;
+    setFollowBusy(true);
+    const was = stats.isFollowing;
+    setStats((s) => ({ ...s, isFollowing: !was, followers: s.followers + (was ? -1 : 1) }));
+    try {
+      if (was) await unfollowUser(user.id, profile.id);
+      else await followUser(user.id, profile.id);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+      loadStats(profile.id);
+    } finally {
+      setFollowBusy(false);
     }
   };
 
