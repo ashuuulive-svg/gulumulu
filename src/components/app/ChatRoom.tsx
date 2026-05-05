@@ -29,6 +29,9 @@ export function ChatRoom({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [callMode, setCallMode] = useState<"voice" | "video" | null>(null);
+  // Stable room id for the conversation pair
+  const roomId = `conv_${conversationId.replace(/-/g, "").slice(0, 24)}`;
 
   useEffect(() => {
     let cancelled = false;
