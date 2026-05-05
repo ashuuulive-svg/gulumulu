@@ -241,6 +241,7 @@ export function HomeFeed({
             </button>
           </div>
         )}
+        {!loading && <SuggestedUsers onOpenUser={onOpenUser} />}
         {posts.map((p) => (
           <PostCard
             key={p.id}
