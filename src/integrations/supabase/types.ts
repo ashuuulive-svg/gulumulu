@@ -157,6 +157,7 @@ export type Database = {
           id: string
           image_url: string
           location: string | null
+          media_type: string
           updated_at: string
         }
         Insert: {
@@ -166,6 +167,7 @@ export type Database = {
           id?: string
           image_url: string
           location?: string | null
+          media_type?: string
           updated_at?: string
         }
         Update: {
@@ -175,6 +177,7 @@ export type Database = {
           id?: string
           image_url?: string
           location?: string | null
+          media_type?: string
           updated_at?: string
         }
         Relationships: []
@@ -224,6 +227,36 @@ export type Database = {
           is_verified?: boolean
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
         }
         Relationships: []
       }
