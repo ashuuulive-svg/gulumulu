@@ -143,8 +143,8 @@ export function UserProfileView({
           <dl className="flex flex-1 justify-around text-center">
             {[
               { k: "Posts", v: images.length },
-              { k: "Followers", v: 0 },
-              { k: "Following", v: 0 },
+              { k: "Followers", v: stats.followers },
+              { k: "Following", v: stats.following },
             ].map((s) => (
               <div key={s.k}>
                 <dt className="text-xs text-muted-foreground">{s.k}</dt>
@@ -164,8 +164,16 @@ export function UserProfileView({
         </div>
 
         <div className="mt-4 flex gap-2">
-          <button className="flex-1 rounded-lg bg-foreground py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90">
-            Follow
+          <button
+            onClick={handleFollow}
+            disabled={followBusy || profile.id === user?.id}
+            className={
+              stats.isFollowing
+                ? "flex-1 rounded-lg bg-pink-soft py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent disabled:opacity-40"
+                : "flex-1 rounded-lg bg-foreground py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-40"
+            }
+          >
+            {followBusy ? "…" : stats.isFollowing ? "Following" : "Follow"}
           </button>
           <button
             onClick={handleMessage}
