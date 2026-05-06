@@ -87,7 +87,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
         .from("profiles")
         .update({
           username,
-          full_name: fullName || null,
+          full_name: fullName.trim(),
           bio: bio || "",
           gender: (gender || null) as Gender | null,
           avatar_url,
