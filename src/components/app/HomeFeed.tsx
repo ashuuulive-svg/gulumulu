@@ -108,7 +108,7 @@ function PostCard({
           <button onClick={onOpenComments} aria-label="Comment">
             <MessageCircle className="h-6 w-6 text-foreground" />
           </button>
-          <button onClick={() => sharePost(post)} aria-label="Share">
+          <button onClick={onShare} aria-label="Share">
             <Send className="h-6 w-6 text-foreground" />
           </button>
         </div>
