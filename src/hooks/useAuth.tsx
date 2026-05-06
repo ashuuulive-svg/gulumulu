@@ -111,11 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(false);
   };
 
-  // Heuristic: setup is complete once user has filled bio OR gender OR uploaded an avatar.
-  // (Username is auto-generated on signup, so we can't use it alone.)
-  const setupComplete = !!profile && (
-    !!profile.gender || !!profile.avatar_url || (profile.bio?.length ?? 0) > 0
-  );
+  // Setup is complete when display name (full_name) and a valid username exist.
+  const usernameValid = !!profile?.username && /^[a-z0-9_]{3,24}$/.test(profile.username);
+  const setupComplete = !!profile && usernameValid && (profile.full_name?.trim().length ?? 0) > 0;
 
   return (
     <Ctx.Provider
