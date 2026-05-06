@@ -204,6 +204,32 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !deleting && setConfirmDelete(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-card" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-foreground">Delete account?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This permanently removes your profile, posts, messages, stories, and follows. You can sign up again with the same email afterwards. This cannot be undone.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 rounded-full bg-pink-soft py-2.5 text-sm font-semibold text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting}
+                onClick={handleDelete}
+                className="flex-1 rounded-full bg-destructive py-2.5 text-sm font-semibold text-destructive-foreground disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
