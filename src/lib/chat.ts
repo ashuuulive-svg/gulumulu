@@ -70,7 +70,7 @@ export async function listConversations(meId: string): Promise<ConversationListI
   const profMap = new Map((profiles ?? []).map((p) => [p.id, p]));
   const previewMap = new Map<string, string>();
   for (const m of lastMsgs ?? []) {
-    if (!previewMap.has(m.conversation_id)) previewMap.set(m.conversation_id, m.body);
+    if (!previewMap.has(m.conversation_id)) previewMap.set(m.conversation_id, m.body ?? "📷 Media");
   }
 
   return convos.map((c) => {
