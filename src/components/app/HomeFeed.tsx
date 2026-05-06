@@ -168,6 +168,20 @@ export function HomeFeed({
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [openComments, setOpenComments] = useState<string | null>(null);
+  const [shareTarget, setShareTarget] = useState<FeedPost | null>(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    unreadCount(user.id).then(setUnread);
+    const ch = supabase
+      .channel(`notif-badge:${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${user.id}` },
+        () => unreadCount(user.id).then(setUnread))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id]);
 
   const reload = async () => {
     if (!user) return;
