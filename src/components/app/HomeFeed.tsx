@@ -137,25 +137,6 @@ function PostCard({
   );
 }
 
-async function sharePost(post: FeedPost) {
-  const url = typeof window !== "undefined" ? window.location.origin : "";
-  const shareData = {
-    title: `@${post.author?.username ?? "user"} on GuluMulu`,
-    text: post.caption ?? `Check out this post by @${post.author?.username ?? "user"}`,
-    url: `${url}/?post=${post.id}`,
-  };
-  try {
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      await navigator.share(shareData);
-      return;
-    }
-    await navigator.clipboard.writeText(shareData.url);
-    toast.success("Link copied to clipboard");
-  } catch (e) {
-    if ((e as Error)?.name === "AbortError") return;
-    toast.error("Could not share");
-  }
-}
 
 export function HomeFeed({
   onCreate,
