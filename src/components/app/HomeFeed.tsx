@@ -278,11 +278,20 @@ export function HomeFeed({
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
             onOpenAuthor={() => onOpenUser?.(p.author_id)}
+            onShare={() => setShareTarget(p)}
           />
         ))}
       </div>
 
       {openComments && <CommentsSheet postId={openComments} onClose={() => setOpenComments(null)} />}
+      {notifOpen && <NotificationsSheet onClose={() => setNotifOpen(false)} onOpenUser={onOpenUser} />}
+      {shareTarget && (
+        <ShareSheet
+          postId={shareTarget.id}
+          authorUsername={shareTarget.author?.username ?? "user"}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </div>
   );
 }
