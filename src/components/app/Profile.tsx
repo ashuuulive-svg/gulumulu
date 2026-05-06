@@ -1,4 +1,4 @@
-import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
@@ -6,6 +6,7 @@ import { ArchiveSheet } from "./ArchiveSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getFollowStats } from "@/lib/follows";
+import { toast } from "sonner";
 
 export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const { profile: realProfile, signOut, refreshProfile, user } = useAuth();
