@@ -102,9 +102,15 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
               )}
               <button
                 onClick={() => { setMenuOpen(false); signOut(); }}
-                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 <LogOut className="h-4 w-4" /> Sign out
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+              >
+                <Trash2 className="h-4 w-4" /> Delete Account
               </button>
             </div>
           )}
