@@ -17,11 +17,13 @@ function PostCard({
   onToggleLike,
   onOpenComments,
   onOpenAuthor,
+  onShare,
 }: {
   post: FeedPost;
   onToggleLike: () => void;
   onOpenComments: () => void;
   onOpenAuthor: () => void;
+  onShare: () => void;
 }) {
   const [saved, setSaved] = useState(false);
   const [burst, setBurst] = useState(false);
