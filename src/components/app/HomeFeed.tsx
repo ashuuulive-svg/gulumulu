@@ -4,9 +4,12 @@ import { cn } from "@/lib/utils";
 import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { unreadCount } from "@/lib/notifications";
 import { CommentsSheet } from "./CommentsSheet";
 import { SuggestedUsers } from "./SuggestedUsers";
 import { StoryRail } from "./StoryRail";
+import { NotificationsSheet } from "./NotificationsSheet";
+import { ShareSheet } from "./ShareSheet";
 import { toast } from "sonner";
 
 function PostCard({
