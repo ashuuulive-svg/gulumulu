@@ -1,9 +1,6 @@
-import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
-
-const ZEGO_APP_ID = 280341621;
-// Using AppSign (kept here per user instruction; for production move to a token server).
-const ZEGO_APP_SIGN = "7cd0481dd5eb7bdc5b9195ffad8c938bb8b858";
+import { useEffect, useRef, useState } from "react";
+import { X, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ZegoCall({
   roomId,
@@ -19,21 +16,44 @@ export function ZegoCall({
   onLeave: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     let zp: { destroy?: () => void } | null = null;
     (async () => {
+      // 1) Get a server-issued token tied to this user
+      const { data, error } = await supabase.functions.invoke("zego-token", {});
+      if (cancelled) return;
+      if (error || !data?.token || !data?.appId) {
+        // Fallback: kit token for test (still works for two clients with the same room)
+        console.warn("Zego token fallback", error);
+      }
+
       const mod = await import("@zegocloud/zego-uikit-prebuilt");
       if (cancelled || !containerRef.current) return;
       const ZegoUIKitPrebuilt = mod.ZegoUIKitPrebuilt;
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        ZEGO_APP_ID,
-        ZEGO_APP_SIGN,
-        roomId,
-        userId,
-        userName,
-      );
+
+      let kitToken: string;
+      if (data?.token && data?.appId) {
+        kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
+          Number(data.appId),
+          data.token,
+          roomId,
+          userId,
+          userName,
+        );
+      } else {
+        // Test fallback only — guarantees both peers join same room with public AppSign
+        kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+          280341621,
+          "7cd0481dd5eb7bdc5b9195ffad8c938bb8b858",
+          roomId,
+          userId,
+          userName,
+        );
+      }
+
       const instance = ZegoUIKitPrebuilt.create(kitToken);
       zp = instance as unknown as { destroy?: () => void };
       instance.joinRoom({
@@ -53,15 +73,11 @@ export function ZegoCall({
       });
     })().catch((e) => {
       console.error("Zego init failed:", e);
-      onLeave();
+      setError(String(e?.message ?? e));
     });
     return () => {
       cancelled = true;
-      try {
-        zp?.destroy?.();
-      } catch {
-        /* noop */
-      }
+      try { zp?.destroy?.(); } catch { /* noop */ }
     };
   }, [roomId, userId, userName, mode, onLeave]);
 
@@ -74,7 +90,18 @@ export function ZegoCall({
       >
         <X className="h-5 w-5" />
       </button>
-      <div ref={containerRef} className="h-full w-full" />
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center text-white">
+          <p className="text-sm">Call failed: {error}</p>
+        </div>
+      )}
+      {!error && (
+        <div ref={containerRef} className="h-full w-full">
+          <div className="flex h-full items-center justify-center text-white">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,9 +4,12 @@ import { cn } from "@/lib/utils";
 import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { unreadCount } from "@/lib/notifications";
 import { CommentsSheet } from "./CommentsSheet";
 import { SuggestedUsers } from "./SuggestedUsers";
 import { StoryRail } from "./StoryRail";
+import { NotificationsSheet } from "./NotificationsSheet";
+import { ShareSheet } from "./ShareSheet";
 import { toast } from "sonner";
 
 function PostCard({
@@ -14,11 +17,13 @@ function PostCard({
   onToggleLike,
   onOpenComments,
   onOpenAuthor,
+  onShare,
 }: {
   post: FeedPost;
   onToggleLike: () => void;
   onOpenComments: () => void;
   onOpenAuthor: () => void;
+  onShare: () => void;
 }) {
   const [saved, setSaved] = useState(false);
   const [burst, setBurst] = useState(false);
@@ -103,7 +108,7 @@ function PostCard({
           <button onClick={onOpenComments} aria-label="Comment">
             <MessageCircle className="h-6 w-6 text-foreground" />
           </button>
-          <button onClick={() => sharePost(post)} aria-label="Share">
+          <button onClick={onShare} aria-label="Share">
             <Send className="h-6 w-6 text-foreground" />
           </button>
         </div>
@@ -132,25 +137,6 @@ function PostCard({
   );
 }
 
-async function sharePost(post: FeedPost) {
-  const url = typeof window !== "undefined" ? window.location.origin : "";
-  const shareData = {
-    title: `@${post.author?.username ?? "user"} on GuluMulu`,
-    text: post.caption ?? `Check out this post by @${post.author?.username ?? "user"}`,
-    url: `${url}/?post=${post.id}`,
-  };
-  try {
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      await navigator.share(shareData);
-      return;
-    }
-    await navigator.clipboard.writeText(shareData.url);
-    toast.success("Link copied to clipboard");
-  } catch (e) {
-    if ((e as Error)?.name === "AbortError") return;
-    toast.error("Could not share");
-  }
-}
 
 export function HomeFeed({
   onCreate,
@@ -163,6 +149,20 @@ export function HomeFeed({
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [openComments, setOpenComments] = useState<string | null>(null);
+  const [shareTarget, setShareTarget] = useState<FeedPost | null>(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    unreadCount(user.id).then(setUnread);
+    const ch = supabase
+      .channel(`notif-badge:${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${user.id}` },
+        () => unreadCount(user.id).then(setUnread))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id]);
 
   const reload = async () => {
     if (!user) return;
@@ -215,8 +215,17 @@ export function HomeFeed({
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur-md">
         <h1 className="font-serif text-2xl font-bold italic tracking-tight text-foreground">GuluMulu</h1>
         <div className="flex items-center gap-3">
-          <button aria-label="Notifications" className="rounded-full p-1.5 hover:bg-pink-soft">
+          <button
+            onClick={() => setNotifOpen(true)}
+            aria-label="Notifications"
+            className="relative rounded-full p-1.5 hover:bg-pink-soft"
+          >
             <Heart className="h-6 w-6 text-foreground" />
+            {unread > 0 && (
+              <span className="absolute right-0 top-0 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
           </button>
           <button onClick={onCreate} aria-label="Create post" className="rounded-full p-1.5 hover:bg-pink-soft">
             <PlusSquare className="h-6 w-6 text-foreground" />
@@ -250,11 +259,20 @@ export function HomeFeed({
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
             onOpenAuthor={() => onOpenUser?.(p.author_id)}
+            onShare={() => setShareTarget(p)}
           />
         ))}
       </div>
 
       {openComments && <CommentsSheet postId={openComments} onClose={() => setOpenComments(null)} />}
+      {notifOpen && <NotificationsSheet onClose={() => setNotifOpen(false)} onOpenUser={onOpenUser} />}
+      {shareTarget && (
+        <ShareSheet
+          postId={shareTarget.id}
+          authorUsername={shareTarget.author?.username ?? "user"}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </div>
   );
 }

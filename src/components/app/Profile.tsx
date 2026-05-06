@@ -1,4 +1,4 @@
-import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
@@ -6,6 +6,7 @@ import { ArchiveSheet } from "./ArchiveSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getFollowStats } from "@/lib/follows";
+import { toast } from "sonner";
 
 export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const { profile: realProfile, signOut, refreshProfile, user } = useAuth();
@@ -17,6 +18,22 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [myImages, setMyImages] = useState<string[]>([]);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account", {});
+      if (error) throw error;
+      toast.success("Account deleted. You can sign up again with the same email.");
+      await supabase.auth.signOut();
+      window.location.reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete account");
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -85,9 +102,15 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
               )}
               <button
                 onClick={() => { setMenuOpen(false); signOut(); }}
-                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 <LogOut className="h-4 w-4" /> Sign out
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+              >
+                <Trash2 className="h-4 w-4" /> Delete Account
               </button>
             </div>
           )}
@@ -181,6 +204,32 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !deleting && setConfirmDelete(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-card" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-foreground">Delete account?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This permanently removes your profile, posts, messages, stories, and follows. You can sign up again with the same email afterwards. This cannot be undone.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 rounded-full bg-pink-soft py-2.5 text-sm font-semibold text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting}
+                onClick={handleDelete}
+                className="flex-1 rounded-full bg-destructive py-2.5 text-sm font-semibold text-destructive-foreground disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

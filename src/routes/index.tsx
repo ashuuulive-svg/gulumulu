@@ -100,6 +100,7 @@ function Index() {
             conversationId={activeChat.conversationId}
             peer={activeChat.peer}
             onBack={() => setActiveChat(null)}
+            onOpenPeer={(uid) => { setActiveChat(null); setViewingUserId(uid); }}
           />
         </div>
       </main>

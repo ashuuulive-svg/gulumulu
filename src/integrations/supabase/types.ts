@@ -58,24 +58,30 @@ export type Database = {
       }
       messages: {
         Row: {
-          body: string
+          body: string | null
           conversation_id: string
           created_at: string
           id: string
+          media_type: string | null
+          media_url: string | null
           sender_id: string
         }
         Insert: {
-          body: string
+          body?: string | null
           conversation_id: string
           created_at?: string
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           sender_id: string
         }
         Update: {
-          body?: string
+          body?: string | null
           conversation_id?: string
           created_at?: string
           id?: string
+          media_type?: string | null
+          media_url?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -87,6 +93,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          post_id: string | null
+          read: boolean
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: []
       }
       post_comments: {
         Row: {

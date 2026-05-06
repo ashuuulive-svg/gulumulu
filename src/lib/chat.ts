@@ -4,7 +4,9 @@ export type Message = {
   id: string;
   conversation_id: string;
   sender_id: string;
-  body: string;
+  body: string | null;
+  media_url: string | null;
+  media_type: string | null;
   created_at: string;
 };
 
@@ -70,7 +72,7 @@ export async function listConversations(meId: string): Promise<ConversationListI
   const profMap = new Map((profiles ?? []).map((p) => [p.id, p]));
   const previewMap = new Map<string, string>();
   for (const m of lastMsgs ?? []) {
-    if (!previewMap.has(m.conversation_id)) previewMap.set(m.conversation_id, m.body);
+    if (!previewMap.has(m.conversation_id)) previewMap.set(m.conversation_id, m.body ?? "📷 Media");
   }
 
   return convos.map((c) => {
@@ -88,7 +90,7 @@ export async function listConversations(meId: string): Promise<ConversationListI
 export async function fetchMessages(conversationId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from("messages")
-    .select("id, conversation_id, sender_id, body, created_at")
+    .select("id, conversation_id, sender_id, body, media_url, media_type, created_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true })
     .limit(500);
@@ -96,11 +98,22 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
   return (data ?? []) as Message[];
 }
 
-export async function sendMessage(conversationId: string, senderId: string, body: string) {
+export async function sendMessage(
+  conversationId: string,
+  senderId: string,
+  body: string,
+  media?: { url: string; type: string } | null,
+) {
   const trimmed = body.trim();
-  if (!trimmed) return;
+  if (!trimmed && !media) return;
   const { error } = await supabase
     .from("messages")
-    .insert({ conversation_id: conversationId, sender_id: senderId, body: trimmed });
+    .insert({
+      conversation_id: conversationId,
+      sender_id: senderId,
+      body: trimmed || null,
+      media_url: media?.url ?? null,
+      media_type: media?.type ?? null,
+    });
   if (error) throw error;
 }

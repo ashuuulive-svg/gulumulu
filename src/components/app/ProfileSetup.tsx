@@ -87,7 +87,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
         .from("profiles")
         .update({
           username,
-          full_name: fullName || null,
+          full_name: fullName.trim(),
           bio: bio || "",
           gender: (gender || null) as Gender | null,
           avatar_url,
@@ -106,9 +106,12 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
     }
   };
 
-  const canStep1 = username.length >= 3 && available === true;
-  const canStep2 = true; // avatar optional
-  const canStep3 = true; // bio + gender optional
+  const usernameRegex = /^[a-z0-9_]{3,24}$/;
+  const usernameOk = usernameRegex.test(username);
+  const fullNameOk = fullName.trim().length > 0;
+  const canStep1 = usernameOk && available === true && fullNameOk;
+  const canStep2 = true;
+  const canStep3 = true;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 py-10">
@@ -117,7 +120,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
         <span className="text-xs text-muted-foreground">Step {step} of 3</span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        {step === 1 && "Pick a unique username so friends can find you."}
+        {step === 1 && "Username (lowercase + underscores only) and a Display Name are required."}
         {step === 2 && "Add a profile picture (you can skip)."}
         {step === 3 && "Tell us a bit about yourself."}
       </p>
@@ -149,23 +152,24 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
                 {!checking && available === false && <X className="h-4 w-4 text-destructive" />}
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                {username.length === 0 && "3–24 chars · letters, numbers, underscore"}
-                {username.length > 0 && username.length < 3 && "At least 3 characters."}
-                {username.length >= 3 && available === false && "Sorry, that username is taken."}
-                {username.length >= 3 && available === true && "Great, this username is available!"}
+                {username.length === 0 && "3–24 chars · lowercase letters, numbers, underscore only"}
+                {username.length > 0 && !usernameOk && "Only a–z, 0–9 and _ allowed (no spaces, uppercase, or emoji)."}
+                {usernameOk && available === false && "Sorry, that username is taken."}
+                {usernameOk && available === true && "Great, this username is available!"}
               </p>
             </Field>
 
-            <Field label="Full Name (optional)">
+            <Field label="Display Name (required) — emojis & uppercase allowed">
               <div className="rounded-2xl bg-card px-4 py-3 shadow-card">
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder="e.g. Ashu ✨"
                   maxLength={60}
                   className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
+              {!fullNameOk && <p className="mt-1.5 text-xs text-muted-foreground">Display name cannot be empty.</p>}
             </Field>
           </div>
         )}
