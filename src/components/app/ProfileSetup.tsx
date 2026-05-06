@@ -152,23 +152,24 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
                 {!checking && available === false && <X className="h-4 w-4 text-destructive" />}
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                {username.length === 0 && "3–24 chars · letters, numbers, underscore"}
-                {username.length > 0 && username.length < 3 && "At least 3 characters."}
-                {username.length >= 3 && available === false && "Sorry, that username is taken."}
-                {username.length >= 3 && available === true && "Great, this username is available!"}
+                {username.length === 0 && "3–24 chars · lowercase letters, numbers, underscore only"}
+                {username.length > 0 && !usernameOk && "Only a–z, 0–9 and _ allowed (no spaces, uppercase, or emoji)."}
+                {usernameOk && available === false && "Sorry, that username is taken."}
+                {usernameOk && available === true && "Great, this username is available!"}
               </p>
             </Field>
 
-            <Field label="Full Name (optional)">
+            <Field label="Display Name (required) — emojis & uppercase allowed">
               <div className="rounded-2xl bg-card px-4 py-3 shadow-card">
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder="e.g. Ashu ✨"
                   maxLength={60}
                   className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
+              {!fullNameOk && <p className="mt-1.5 text-xs text-muted-foreground">Display name cannot be empty.</p>}
             </Field>
           </div>
         )}
