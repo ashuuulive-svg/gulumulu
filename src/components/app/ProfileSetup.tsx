@@ -120,7 +120,7 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
         <span className="text-xs text-muted-foreground">Step {step} of 3</span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        {step === 1 && "Pick a unique username so friends can find you."}
+        {step === 1 && "Username (lowercase + underscores only) and a Display Name are required."}
         {step === 2 && "Add a profile picture (you can skip)."}
         {step === 3 && "Tell us a bit about yourself."}
       </p>
