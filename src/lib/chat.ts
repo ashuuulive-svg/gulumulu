@@ -4,7 +4,9 @@ export type Message = {
   id: string;
   conversation_id: string;
   sender_id: string;
-  body: string;
+  body: string | null;
+  media_url: string | null;
+  media_type: string | null;
   created_at: string;
 };
 
