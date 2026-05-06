@@ -106,9 +106,12 @@ export function ProfileSetup({ onDone }: { onDone: () => void }) {
     }
   };
 
-  const canStep1 = username.length >= 3 && available === true;
-  const canStep2 = true; // avatar optional
-  const canStep3 = true; // bio + gender optional
+  const usernameRegex = /^[a-z0-9_]{3,24}$/;
+  const usernameOk = usernameRegex.test(username);
+  const fullNameOk = fullName.trim().length > 0;
+  const canStep1 = usernameOk && available === true && fullNameOk;
+  const canStep2 = true;
+  const canStep3 = true;
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 py-10">
