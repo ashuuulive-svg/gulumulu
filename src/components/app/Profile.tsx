@@ -18,6 +18,22 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [myImages, setMyImages] = useState<string[]>([]);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account", {});
+      if (error) throw error;
+      toast.success("Account deleted. You can sign up again with the same email.");
+      await supabase.auth.signOut();
+      window.location.reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete account");
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
