@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Sparkles, Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, User as UserIcon, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 
-type Panel = "login" | "register";
+type Panel = "login" | "register" | "phone";
 
 export function Login() {
   const [panel, setPanel] = useState<Panel>("login");
@@ -16,6 +16,25 @@ export function Login() {
   const [rEmail, setREmail] = useState("");
   const [rPassword, setRPassword] = useState("");
   const [rConfirm, setRConfirm] = useState("");
+
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  const sendOtp = async () => {
+    if (!/^\+\d{8,15}$/.test(phone)) { toast.error("Enter phone in international format e.g. +14155552671"); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ phone });
+    setLoading(false);
+    if (error) toast.error("Failed to send code", { description: error.message });
+    else { setOtpSent(true); toast.success("Code sent via SMS"); }
+  };
+  const verifyOtp = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+    setLoading(false);
+    if (error) toast.error("Invalid code", { description: error.message });
+  };
 
   const handleGoogle = async () => {
     setLoading(true);
@@ -121,8 +140,25 @@ export function Login() {
             Register
           </button>
         </div>
-
-        {/* Slide track */}
+        <div className="mx-3 mb-2">
+          <button
+            onClick={() => setPanel("phone")}
+            className={`w-full rounded-full py-2 text-xs font-semibold ${panel === "phone" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
+          >
+            <Phone className="mr-1 inline h-3 w-3" /> Use phone number
+          </button>
+        </div>
+        {panel === "phone" && (
+          <div className="px-5 pb-6 pt-2 space-y-3">
+            <PinkInput icon={<Phone className="h-4 w-4" />} type="tel" placeholder="+14155552671" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={otpSent} />
+            {otpSent && <PinkInput icon={<Lock className="h-4 w-4" />} type="text" inputMode="numeric" placeholder="6-digit code" value={otp} onChange={(e) => setOtp(e.target.value)} />}
+            <PrimaryButton loading={loading} onClick={otpSent ? verifyOtp : sendOtp}>
+              {otpSent ? "Verify code" : "Send SMS code"}
+            </PrimaryButton>
+            {otpSent && <button onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-xs text-muted-foreground">Use a different number</button>}
+          </div>
+        )}
+        {panel !== "phone" && (
         <div className="overflow-hidden">
           <div
             className="flex w-[200%] transition-transform duration-[600ms] ease-in-out"
@@ -195,6 +231,7 @@ export function Login() {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <p className="z-10 mt-6 max-w-xs text-center text-[11px] text-muted-foreground">

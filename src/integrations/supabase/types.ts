@@ -159,6 +159,24 @@ export type Database = {
           },
         ]
       }
+      post_hides: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_likes: {
         Row: {
           created_at: string
@@ -185,6 +203,24 @@ export type Database = {
           },
         ]
       }
+      post_saves: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string
@@ -194,6 +230,10 @@ export type Database = {
           image_url: string
           location: string | null
           media_type: string
+          music_artist: string | null
+          music_artwork_url: string | null
+          music_preview_url: string | null
+          music_title: string | null
           updated_at: string
         }
         Insert: {
@@ -204,6 +244,10 @@ export type Database = {
           image_url: string
           location?: string | null
           media_type?: string
+          music_artist?: string | null
+          music_artwork_url?: string | null
+          music_preview_url?: string | null
+          music_title?: string | null
           updated_at?: string
         }
         Update: {
@@ -214,6 +258,10 @@ export type Database = {
           image_url?: string
           location?: string | null
           media_type?: string
+          music_artist?: string | null
+          music_artwork_url?: string | null
+          music_preview_url?: string | null
+          music_title?: string | null
           updated_at?: string
         }
         Relationships: []

@@ -1,5 +1,6 @@
-import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2 } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ActivitySheet } from "./ActivitySheet";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
@@ -20,6 +21,7 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [following, setFollowing] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -85,6 +87,12 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
                 className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
                 Edit Profile
+              </button>
+              <button
+                onClick={() => { setMenuOpen(false); setActivityOpen(true); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+              >
+                <Activity className="h-4 w-4" /> Your Activity
               </button>
               <button
                 onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
@@ -204,6 +212,7 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
+      {activityOpen && <ActivitySheet onClose={() => setActivityOpen(false)} />}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !deleting && setConfirmDelete(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-card" onClick={(e) => e.stopPropagation()}>

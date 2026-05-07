@@ -1,7 +1,7 @@
-import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin, BadgeCheck } from "lucide-react";
+import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin, BadgeCheck, Music2, Trash2, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
+import { fetchFeed, toggleLike, timeAgo, deletePost as deletePostFn, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { unreadCount } from "@/lib/notifications";
@@ -10,6 +10,7 @@ import { SuggestedUsers } from "./SuggestedUsers";
 import { StoryRail } from "./StoryRail";
 import { NotificationsSheet } from "./NotificationsSheet";
 import { ShareSheet } from "./ShareSheet";
+import { toggleSave, isSaved, hidePost, getHiddenPostIds } from "@/lib/activity";
 import { toast } from "sonner";
 
 function PostCard({
@@ -18,16 +19,36 @@ function PostCard({
   onOpenComments,
   onOpenAuthor,
   onShare,
+  onDelete,
+  onHide,
+  currentUserId,
 }: {
   post: FeedPost;
   onToggleLike: () => void;
   onOpenComments: () => void;
   onOpenAuthor: () => void;
   onShare: () => void;
+  onDelete: () => void;
+  onHide: () => void;
+  currentUserId?: string;
 }) {
   const [saved, setSaved] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [burst, setBurst] = useState(false);
   const tapTimer = useRef<number | undefined>(undefined);
+  const isMine = currentUserId === post.author_id;
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    isSaved(post.id, currentUserId).then(setSaved);
+  }, [post.id, currentUserId]);
+
+  const handleSave = async () => {
+    if (!currentUserId) return;
+    setSaved((v) => !v);
+    try { await toggleSave(post.id, currentUserId, saved); }
+    catch { setSaved((v) => !v); toast.error("Failed"); }
+  };
 
   const onImageClick = () => {
     if (tapTimer.current) {
@@ -70,9 +91,30 @@ function PostCard({
             )}
           </div>
         </button>
-        <button aria-label="More options" className="rounded-full p-1.5 hover:bg-pink-soft">
-          <MoreHorizontal className="h-5 w-5 text-foreground" />
-        </button>
+        <div className="relative">
+          <button onClick={() => setMenuOpen((v) => !v)} aria-label="More options" className="rounded-full p-1.5 hover:bg-pink-soft">
+            <MoreHorizontal className="h-5 w-5 text-foreground" />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-9 z-30 w-44 overflow-hidden rounded-2xl bg-card shadow-card">
+              {isMine ? (
+                <button
+                  onClick={() => { setMenuOpen(false); onDelete(); }}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-destructive hover:bg-pink-soft"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setMenuOpen(false); onHide(); }}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+                >
+                  <EyeOff className="h-4 w-4" /> Hide
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       <div
@@ -112,10 +154,21 @@ function PostCard({
             <Send className="h-6 w-6 text-foreground" />
           </button>
         </div>
-        <button onClick={() => setSaved((v) => !v)} aria-label="Save">
+        <button onClick={handleSave} aria-label="Save">
           <Bookmark className={cn("h-6 w-6 text-foreground", saved && "fill-foreground")} />
         </button>
       </div>
+
+      {post.music_title && (
+        <div className="mx-4 mt-2 flex items-center gap-2 rounded-full bg-pink-soft px-3 py-1.5">
+          {post.music_artwork_url && <img src={post.music_artwork_url} alt="" className="h-6 w-6 rounded object-cover" />}
+          <Music2 className="h-3.5 w-3.5 text-foreground" />
+          <p className="truncate text-xs font-medium text-foreground">{post.music_title} · {post.music_artist}</p>
+          {post.music_preview_url && (
+            <audio src={post.music_preview_url} controls className="ml-auto h-6 w-32" />
+          )}
+        </div>
+      )}
 
       <div className="space-y-1 px-4 pb-4 pt-2">
         <p className="text-sm font-semibold text-foreground">
@@ -152,6 +205,20 @@ export function HomeFeed({
   const [shareTarget, setShareTarget] = useState<FeedPost | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  useEffect(() => { if (user) getHiddenPostIds(user.id).then(setHidden); }, [user?.id]);
+
+  const onDelete = async (post: FeedPost) => {
+    if (!confirm("Delete this post?")) return;
+    try { await deletePostFn(post.id); setPosts((p) => p.filter((x) => x.id !== post.id)); toast.success("Post deleted"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  };
+  const onHide = async (post: FeedPost) => {
+    if (!user) return;
+    try { await hidePost(post.id, user.id); setHidden((s) => new Set(s).add(post.id)); toast.success("Post hidden"); }
+    catch { toast.error("Failed"); }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -252,14 +319,17 @@ export function HomeFeed({
           </div>
         )}
         {!loading && <SuggestedUsers onOpenUser={onOpenUser} />}
-        {posts.map((p) => (
+        {posts.filter((p) => !hidden.has(p.id)).map((p) => (
           <PostCard
             key={p.id}
             post={p}
+            currentUserId={user?.id}
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
             onOpenAuthor={() => onOpenUser?.(p.author_id)}
             onShare={() => setShareTarget(p)}
+            onDelete={() => onDelete(p)}
+            onHide={() => onHide(p)}
           />
         ))}
       </div>

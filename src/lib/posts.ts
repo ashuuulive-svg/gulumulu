@@ -8,6 +8,10 @@ export type FeedPost = {
   caption: string | null;
   location: string | null;
   created_at: string;
+  music_title: string | null;
+  music_artist: string | null;
+  music_preview_url: string | null;
+  music_artwork_url: string | null;
   author: { username: string; avatar_url: string | null; full_name: string | null; is_verified?: boolean } | null;
   like_count: number;
   comment_count: number;
@@ -48,6 +52,7 @@ export async function createPost(input: {
   mediaType?: "image" | "video";
   caption: string;
   location: string | null;
+  music?: { title: string; artist: string; previewUrl: string; artworkUrl: string } | null;
 }) {
   const { error } = await supabase.from("posts").insert({
     author_id: input.authorId,
@@ -55,14 +60,23 @@ export async function createPost(input: {
     media_type: input.mediaType ?? "image",
     caption: input.caption,
     location: input.location,
+    music_title: input.music?.title ?? null,
+    music_artist: input.music?.artist ?? null,
+    music_preview_url: input.music?.previewUrl ?? null,
+    music_artwork_url: input.music?.artworkUrl ?? null,
   });
+  if (error) throw error;
+}
+
+export async function deletePost(postId: string) {
+  const { error } = await supabase.from("posts").delete().eq("id", postId);
   if (error) throw error;
 }
 
 export async function fetchFeed(currentUserId: string): Promise<FeedPost[]> {
   const { data: posts, error } = await supabase
     .from("posts")
-    .select("id, author_id, image_url, media_type, caption, location, created_at")
+    .select("id, author_id, image_url, media_type, caption, location, created_at, music_title, music_artist, music_preview_url, music_artwork_url")
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw error;
