@@ -89,6 +89,12 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
                 Edit Profile
               </button>
               <button
+                onClick={() => { setMenuOpen(false); setActivityOpen(true); }}
+                className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
+              >
+                <Activity className="h-4 w-4" /> Your Activity
+              </button>
+              <button
                 onClick={() => { setMenuOpen(false); setArchiveOpen(true); }}
                 className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-foreground hover:bg-pink-soft"
               >
@@ -206,6 +212,7 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
         />
       )}
       {archiveOpen && <ArchiveSheet onClose={() => setArchiveOpen(false)} />}
+      {activityOpen && <ActivitySheet onClose={() => setActivityOpen(false)} />}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !deleting && setConfirmDelete(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-card p-5 shadow-card" onClick={(e) => e.stopPropagation()}>
