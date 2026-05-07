@@ -1,5 +1,6 @@
-import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2 } from "lucide-react";
+import { Menu, Grid3x3, UserSquare2, MoreVertical, Archive, LogOut, Lock, BadgeCheck, ShieldCheck, Trash2, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ActivitySheet } from "./ActivitySheet";
 import { cn } from "@/lib/utils";
 import { EditProfileModal, type ProfileEdit } from "./EditProfileModal";
 import { ArchiveSheet } from "./ArchiveSheet";
@@ -20,6 +21,7 @@ export function Profile({ onOpenAdmin }: { onOpenAdmin?: () => void } = {}) {
   const [following, setFollowing] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
 
   const handleDelete = async () => {
     setDeleting(true);
