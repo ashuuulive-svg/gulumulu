@@ -51,8 +51,6 @@ function PostCard({
     try { await toggleSave(post.id, currentUserId, saved); }
     catch { setSaved((v) => !v); toast.error("Failed"); }
   };
-  const [burst, setBurst] = useState(false);
-  const tapTimer = useRef<number | undefined>(undefined);
 
   const onImageClick = () => {
     if (tapTimer.current) {
