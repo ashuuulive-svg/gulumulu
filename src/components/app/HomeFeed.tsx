@@ -21,14 +21,36 @@ function PostCard({
   onOpenComments,
   onOpenAuthor,
   onShare,
+  onDelete,
+  onHide,
+  currentUserId,
 }: {
   post: FeedPost;
   onToggleLike: () => void;
   onOpenComments: () => void;
   onOpenAuthor: () => void;
   onShare: () => void;
+  onDelete: () => void;
+  onHide: () => void;
+  currentUserId?: string;
 }) {
   const [saved, setSaved] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [burst, setBurst] = useState(false);
+  const tapTimer = useRef<number | undefined>(undefined);
+  const isMine = currentUserId === post.author_id;
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    isSaved(post.id, currentUserId).then(setSaved);
+  }, [post.id, currentUserId]);
+
+  const handleSave = async () => {
+    if (!currentUserId) return;
+    setSaved((v) => !v);
+    try { await toggleSave(post.id, currentUserId, saved); }
+    catch { setSaved((v) => !v); toast.error("Failed"); }
+  };
   const [burst, setBurst] = useState(false);
   const tapTimer = useRef<number | undefined>(undefined);
 
