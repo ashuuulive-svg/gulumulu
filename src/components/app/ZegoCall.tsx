@@ -31,8 +31,10 @@ export function ZegoCall({
       }
 
       const mod = await import("@zegocloud/zego-uikit-prebuilt");
+      const zimMod = await import("zego-zim-web");
       if (cancelled || !containerRef.current) return;
       const ZegoUIKitPrebuilt = mod.ZegoUIKitPrebuilt;
+      try { ZegoUIKitPrebuilt.addPlugins({ ZIM: zimMod.ZIM }); } catch (e) { console.warn("ZIM plugin add failed", e); }
 
       let kitToken: string;
       if (data?.token && data?.appId) {

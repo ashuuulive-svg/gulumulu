@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Sparkles, Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
+import { Sparkles, Mail, Lock, User as UserIcon, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 
-type Panel = "login" | "register";
+type Panel = "login" | "register" | "phone";
 
 export function Login() {
   const [panel, setPanel] = useState<Panel>("login");
