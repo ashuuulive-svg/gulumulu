@@ -140,6 +140,25 @@ export function Login() {
             Register
           </button>
         </div>
+        <div className="mx-3 mb-2">
+          <button
+            onClick={() => setPanel("phone")}
+            className={`w-full rounded-full py-2 text-xs font-semibold ${panel === "phone" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
+          >
+            <Phone className="mr-1 inline h-3 w-3" /> Use phone number
+          </button>
+        </div>
+        {panel === "phone" && (
+          <div className="px-5 pb-6 pt-2 space-y-3">
+            <PinkInput icon={<Phone className="h-4 w-4" />} type="tel" placeholder="+14155552671" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={otpSent} />
+            {otpSent && <PinkInput icon={<Lock className="h-4 w-4" />} type="text" inputMode="numeric" placeholder="6-digit code" value={otp} onChange={(e) => setOtp(e.target.value)} />}
+            <PrimaryButton loading={loading} onClick={otpSent ? verifyOtp : sendOtp}>
+              {otpSent ? "Verify code" : "Send SMS code"}
+            </PrimaryButton>
+            {otpSent && <button onClick={() => { setOtpSent(false); setOtp(""); }} className="w-full text-xs text-muted-foreground">Use a different number</button>}
+          </div>
+        )}
+        {panel !== "phone" && (
 
         {/* Slide track */}
         <div className="overflow-hidden">
