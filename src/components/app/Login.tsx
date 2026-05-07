@@ -17,6 +17,25 @@ export function Login() {
   const [rPassword, setRPassword] = useState("");
   const [rConfirm, setRConfirm] = useState("");
 
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  const sendOtp = async () => {
+    if (!/^\+\d{8,15}$/.test(phone)) { toast.error("Enter phone in international format e.g. +14155552671"); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ phone });
+    setLoading(false);
+    if (error) toast.error("Failed to send code", { description: error.message });
+    else { setOtpSent(true); toast.success("Code sent via SMS"); }
+  };
+  const verifyOtp = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" });
+    setLoading(false);
+    if (error) toast.error("Invalid code", { description: error.message });
+  };
+
   const handleGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
