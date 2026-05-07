@@ -233,6 +233,7 @@ export function Login() {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <p className="z-10 mt-6 max-w-xs text-center text-[11px] text-muted-foreground">
