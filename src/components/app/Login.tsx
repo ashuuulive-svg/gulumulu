@@ -10,11 +10,9 @@ export function Login() {
   const [panel, setPanel] = useState<Panel>("login");
   const [loading, setLoading] = useState(false);
 
-  // login
   const [liEmail, setLiEmail] = useState("");
   const [liPassword, setLiPassword] = useState("");
 
-  // register
   const [rEmail, setREmail] = useState("");
   const [rPassword, setRPassword] = useState("");
   const [rConfirm, setRConfirm] = useState("");
@@ -81,37 +79,35 @@ export function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-[#FFF5F8] via-white to-[#FFE4EC] px-5 py-10 dark:from-background dark:via-background dark:to-background">
-      {/* Decorative blobs */}
-      <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-[#FFC0CB]/50 blur-3xl dark:hidden" />
-      <div className="pointer-events-none absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-[#FF9EC4]/40 blur-3xl dark:hidden" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-5 py-10">
+      {/* Decorative blobs using app pink tokens */}
+      <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-pink-soft/70 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-accent/60 blur-3xl" />
 
       {/* Mascot / Logo */}
       <div className="z-10 mb-6 flex flex-col items-center animate-fade-in">
-        <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[#FFC0CB] to-[#FF7AA8] shadow-[0_10px_30px_-8px_rgba(255,0,127,0.45)] dark:from-foreground dark:to-foreground">
-          <Sparkles className="h-10 w-10 text-white dark:text-background" strokeWidth={1.8} />
+        <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-soft to-accent shadow-card">
+          <Sparkles className="h-10 w-10 text-foreground" strokeWidth={1.8} />
         </div>
-        <h1 className="bg-gradient-to-r from-[#FF007F] to-[#FF7AA8] bg-clip-text text-3xl font-extrabold tracking-tight text-transparent dark:bg-none dark:text-foreground">
-          Gulumulu
-        </h1>
-        <p className="mt-1 text-xs font-medium text-[#C2185B]/80 dark:text-muted-foreground">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Gulumulu</h1>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
           Soft social, sweetly designed
         </p>
       </div>
 
       {/* Sliding card */}
-      <div className="z-10 w-full max-w-sm overflow-hidden rounded-3xl border border-[#FFD3DF] bg-white/90 shadow-[0_20px_60px_-20px_rgba(255,0,127,0.35)] backdrop-blur-md dark:border-border dark:bg-card">
+      <div className="z-10 w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card shadow-card">
         {/* Tab switcher */}
-        <div className="relative m-3 grid grid-cols-2 rounded-full bg-[#FFF0F5] p-1 dark:bg-secondary">
+        <div className="relative m-3 grid grid-cols-2 rounded-full bg-secondary p-1">
           <span
-            className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-gradient-to-r from-[#FF007F] to-[#FF7AA8] shadow-md transition-transform duration-500 ease-in-out dark:from-foreground dark:to-foreground"
+            className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-foreground shadow transition-transform duration-500 ease-in-out"
             style={{ transform: panel === "login" ? "translateX(0%)" : "translateX(100%)" }}
             aria-hidden
           />
           <button
             onClick={() => setPanel("login")}
             className={`relative z-10 rounded-full py-2 text-sm font-semibold transition-colors duration-300 ${
-              panel === "login" ? "text-white dark:text-background" : "text-[#FF007F] dark:text-foreground"
+              panel === "login" ? "text-background" : "text-foreground"
             }`}
           >
             Login
@@ -119,7 +115,7 @@ export function Login() {
           <button
             onClick={() => setPanel("register")}
             className={`relative z-10 rounded-full py-2 text-sm font-semibold transition-colors duration-300 ${
-              panel === "register" ? "text-white dark:text-background" : "text-[#FF007F] dark:text-foreground"
+              panel === "register" ? "text-background" : "text-foreground"
             }`}
           >
             Register
@@ -158,11 +154,7 @@ export function Login() {
 
               <Divider />
 
-              <SocialButtons
-                onGoogle={handleGoogle}
-                onFacebook={handleFacebook}
-                loading={loading}
-              />
+              <SocialButtons onGoogle={handleGoogle} onFacebook={handleFacebook} loading={loading} />
             </div>
 
             {/* Register Panel */}
@@ -199,17 +191,13 @@ export function Login() {
 
               <Divider />
 
-              <SocialButtons
-                onGoogle={handleGoogle}
-                onFacebook={handleFacebook}
-                loading={loading}
-              />
+              <SocialButtons onGoogle={handleGoogle} onFacebook={handleFacebook} loading={loading} />
             </div>
           </div>
         </div>
       </div>
 
-      <p className="z-10 mt-6 max-w-xs text-center text-[11px] text-[#C2185B]/70 dark:text-muted-foreground">
+      <p className="z-10 mt-6 max-w-xs text-center text-[11px] text-muted-foreground">
         By continuing you agree to our Terms & Privacy Policy.
       </p>
     </div>
@@ -222,12 +210,12 @@ function PinkInput({
 }: React.InputHTMLAttributes<HTMLInputElement> & { icon: React.ReactNode }) {
   return (
     <div className="group relative flex items-center">
-      <span className="absolute left-3.5 text-[#FF7AA8] transition-colors group-focus-within:text-[#FF007F] dark:text-muted-foreground">
+      <span className="absolute left-3.5 text-muted-foreground transition-colors group-focus-within:text-foreground">
         {icon}
       </span>
       <input
         {...props}
-        className="w-full rounded-full border-2 border-[#FFD3DF] bg-white py-3 pl-10 pr-4 text-sm text-black placeholder:text-[#FFB3CC] transition-all focus:border-[#FF007F] focus:outline-none focus:ring-4 focus:ring-[#FF007F]/15 dark:border-border dark:bg-card dark:text-foreground dark:placeholder:text-muted-foreground dark:focus:border-foreground dark:focus:ring-foreground/15"
+        className="w-full rounded-full border-2 border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-all focus:border-foreground focus:outline-none focus:ring-4 focus:ring-pink-soft"
       />
     </div>
   );
@@ -242,7 +230,7 @@ function PrimaryButton({
     <button
       {...props}
       disabled={loading || props.disabled}
-      className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF007F] to-[#FF7AA8] py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_rgba(255,0,127,0.55)] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 dark:from-foreground dark:to-foreground dark:text-background"
+      className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-3.5 text-sm font-semibold text-background shadow-card transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
     >
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
       {children}
@@ -253,11 +241,11 @@ function PrimaryButton({
 function Divider() {
   return (
     <div className="my-4 flex items-center gap-3">
-      <span className="h-px flex-1 bg-[#FFD3DF] dark:bg-border" />
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#FF7AA8] dark:text-muted-foreground">
+      <span className="h-px flex-1 bg-border" />
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         or
       </span>
-      <span className="h-px flex-1 bg-[#FFD3DF] dark:bg-border" />
+      <span className="h-px flex-1 bg-border" />
     </div>
   );
 }
@@ -276,14 +264,14 @@ function SocialButtons({
       <button
         onClick={onGoogle}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-[#FFD3DF] bg-white py-3 text-sm font-semibold text-black transition-all hover:border-[#FF007F] hover:bg-[#FFF5F8] active:scale-[0.98] disabled:opacity-60 dark:border-border dark:bg-card dark:text-foreground dark:hover:border-foreground dark:hover:bg-secondary"
+        className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-border bg-card py-3 text-sm font-semibold text-foreground transition-all hover:border-foreground hover:bg-secondary active:scale-[0.98] disabled:opacity-60"
       >
         <GoogleIcon />
         Continue with Google
       </button>
       <button
         onClick={onFacebook}
-        className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-[#FFD3DF] bg-white py-3 text-sm font-semibold text-black transition-all hover:border-[#FF007F] hover:bg-[#FFF5F8] active:scale-[0.98] dark:border-border dark:bg-card dark:text-foreground dark:hover:border-foreground dark:hover:bg-secondary"
+        className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-border bg-card py-3 text-sm font-semibold text-foreground transition-all hover:border-foreground hover:bg-secondary active:scale-[0.98]"
       >
         <FacebookIcon />
         Continue with Facebook
