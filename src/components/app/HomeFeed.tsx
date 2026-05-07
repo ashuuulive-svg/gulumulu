@@ -321,14 +321,17 @@ export function HomeFeed({
           </div>
         )}
         {!loading && <SuggestedUsers onOpenUser={onOpenUser} />}
-        {posts.map((p) => (
+        {posts.filter((p) => !hidden.has(p.id)).map((p) => (
           <PostCard
             key={p.id}
             post={p}
+            currentUserId={user?.id}
             onToggleLike={() => onToggleLike(p)}
             onOpenComments={() => setOpenComments(p.id)}
             onOpenAuthor={() => onOpenUser?.(p.author_id)}
             onShare={() => setShareTarget(p)}
+            onDelete={() => onDelete(p)}
+            onHide={() => onHide(p)}
           />
         ))}
       </div>
