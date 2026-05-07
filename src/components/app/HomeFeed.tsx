@@ -1,7 +1,7 @@
-import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin, BadgeCheck } from "lucide-react";
+import { Heart, PlusSquare, MessageCircle, MoreHorizontal, Send, Bookmark, MapPin, BadgeCheck, Music2, Trash2, EyeOff, Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { fetchFeed, toggleLike, timeAgo, type FeedPost } from "@/lib/posts";
+import { fetchFeed, toggleLike, timeAgo, deletePost as deletePostFn, type FeedPost } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { unreadCount } from "@/lib/notifications";
@@ -10,6 +10,9 @@ import { SuggestedUsers } from "./SuggestedUsers";
 import { StoryRail } from "./StoryRail";
 import { NotificationsSheet } from "./NotificationsSheet";
 import { ShareSheet } from "./ShareSheet";
+import { CameraCapture } from "./CameraCapture";
+import { CreatePostModal } from "./CreatePostModal";
+import { toggleSave, isSaved, hidePost, getHiddenPostIds } from "@/lib/activity";
 import { toast } from "sonner";
 
 function PostCard({
