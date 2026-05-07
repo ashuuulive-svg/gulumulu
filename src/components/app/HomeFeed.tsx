@@ -207,6 +207,20 @@ export function HomeFeed({
   const [shareTarget, setShareTarget] = useState<FeedPost | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  useEffect(() => { if (user) getHiddenPostIds(user.id).then(setHidden); }, [user?.id]);
+
+  const onDelete = async (post: FeedPost) => {
+    if (!confirm("Delete this post?")) return;
+    try { await deletePostFn(post.id); setPosts((p) => p.filter((x) => x.id !== post.id)); toast.success("Post deleted"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  };
+  const onHide = async (post: FeedPost) => {
+    if (!user) return;
+    try { await hidePost(post.id, user.id); setHidden((s) => new Set(s).add(post.id)); toast.success("Post hidden"); }
+    catch { toast.error("Failed"); }
+  };
 
   useEffect(() => {
     if (!user) return;
