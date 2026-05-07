@@ -159,8 +159,6 @@ export function Login() {
           </div>
         )}
         {panel !== "phone" && (
-
-        {/* Slide track */}
         <div className="overflow-hidden">
           <div
             className="flex w-[200%] transition-transform duration-[600ms] ease-in-out"
